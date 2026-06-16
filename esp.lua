@@ -1,10 +1,11 @@
--- C00lkidd214anzz Hub (ESP Boxes + Tracers + Team Color Custom)
+-- C00lkidd214anzz Hub (Advanced Menu + Multi-Team ESP)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 local ESP_Enabled = true
+local Tracer_Mode = "Bottom" -- "Bottom", "Center", "Top"
 local espObjects = {}
 
 -- 1. Ватермарк
@@ -17,20 +18,60 @@ watermark.Position = Vector2.new(10, 30)
 watermark.Visible = true
 watermark.Font = 2
 
--- 2. GUI Кнопка управления
+-- 2. Создание полноценного GUI Меню
 local screenGui = Instance.new("ScreenGui", game.CoreGui or LocalPlayer:WaitForChild("PlayerGui"))
-local button = Instance.new("TextButton", screenGui)
-button.Size = UDim2.new(0, 120, 0, 50)
-button.Position = UDim2.new(0.1, 0, 0.1, 0)
-button.Text = "ESP: ON"
-button.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-button.Draggable = true
-button.Active = true
 
-button.MouseButton1Click:Connect(function()
+-- Главная кнопка открытия/закрытия меню
+local mainToggle = Instance.new("TextButton", screenGui)
+mainToggle.Size = UDim2.new(0, 130, 0, 45)
+mainToggle.Position = UDim2.new(0.1, 0, 0.1, 0)
+mainToggle.Text = "C00lkidd Menu"
+mainToggle.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainToggle.Font = Enum.Font.SourceSansBold
+mainToggle.TextSize = 16
+mainToggle.Draggable = true
+mainToggle.Active = true
+
+local uiCornerMain = Instance.new("UICorner", mainToggle)
+
+-- Панель самого меню (появляется рядом с кнопкой)
+local menuFrame = Instance.new("Frame", screenGui)
+menuFrame.Size = UDim2.new(0, 180, 0, 180)
+menuFrame.Position = UDim2.new(0.1, 0, 0.1, 55)
+menuFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+menuFrame.Visible = false
+local uiCornerFrame = Instance.new("UICorner", menuFrame)
+
+-- Привязка меню к кнопке, чтобы его можно было открывать/закрывать кликом
+mainToggle.MouseButton1Click:Connect(function()
+    menuFrame.Visible = not menuFrame.Visible
+    -- Обновляем позицию меню под кнопкой в момент открытия
+    menuFrame.Position = UDim2.new(0, mainToggle.AbsolutePosition.X, 0, mainToggle.AbsolutePosition.Y + 55)
+end)
+
+-- Перетаскивание меню вслед за кнопкой
+mainToggle.Changed:Connect(function(prop)
+    if prop == "Position" then
+        menuFrame.Position = UDim2.new(0, mainToggle.AbsolutePosition.X, 0, mainToggle.AbsolutePosition.Y + 55)
+    end
+end)
+
+-- Кнопка ВКЛ/ВЫКЛ ESP внутри меню
+local espToggleBtn = Instance.new("TextButton", menuFrame)
+espToggleBtn.Size = UDim2.new(0, 160, 0, 35)
+espToggleBtn.Position = UDim2.new(0, 10, 0, 15)
+espToggleBtn.Text = "ESP: ON"
+espToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+espToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+espToggleBtn.Font = Enum.Font.SourceSansBold
+espToggleBtn.TextSize = 14
+Instance.new("UICorner", espToggleBtn)
+
+espToggleBtn.MouseButton1Click:Connect(function()
     ESP_Enabled = not ESP_Enabled
-    button.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
-    button.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+    espToggleBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
+    espToggleBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
     
     if not ESP_Enabled then
         for _, obj in pairs(espObjects) do 
@@ -40,7 +81,41 @@ button.MouseButton1Click:Connect(function()
     end
 end)
 
--- Функция генерации объектов рисования
+-- Текст-заголовок для режимов линий
+local tracerLabel = Instance.new("TextLabel", menuFrame)
+tracerLabel.Size = UDim2.new(0, 160, 0, 20)
+tracerLabel.Position = UDim2.new(0, 10, 0, 65)
+tracerLabel.Text = "Положение линий:"
+tracerLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+tracerLabel.BackgroundTransparency = 1
+tracerLabel.Font = Enum.Font.SourceSans
+tracerLabel.TextSize = 14
+
+-- Кнопка изменения положения линий
+local tracerModeBtn = Instance.new("TextButton", menuFrame)
+tracerModeBtn.Size = UDim2.new(0, 160, 0, 35)
+tracerModeBtn.Position = UDim2.new(0, 10, 0, 90)
+tracerModeBtn.Text = "НИЗ ЭКРАНА"
+tracerModeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+tracerModeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+tracerModeBtn.Font = Enum.Font.SourceSansBold
+tracerModeBtn.TextSize = 14
+Instance.new("UICorner", tracerModeBtn)
+
+tracerModeBtn.MouseButton1Click:Connect(function()
+    if Tracer_Mode == "Bottom" then
+        Tracer_Mode = "Center"
+        tracerModeBtn.Text = "ЦЕНТР ЭКРАНА"
+    elseif Tracer_Mode == "Center" then
+        Tracer_Mode = "Top"
+        tracerModeBtn.Text = "ВВЕРХ ЭКРАНА"
+    else
+        Tracer_Mode = "Bottom"
+        tracerModeBtn.Text = "НИЗ ЭКРАНА"
+    end
+end)
+
+-- Скрипт механики ESP
 local function createESPItems()
     local box = Drawing.new("Square")
     box.Visible = false
@@ -54,7 +129,6 @@ local function createESPItems()
     return {Box = box, Tracer = tracer}
 end
 
--- Очистка объектов при выходе игрока
 local function removeESPItems(player)
     if espObjects[player] then
         espObjects[player].Box:Remove()
@@ -63,12 +137,10 @@ local function removeESPItems(player)
     end
 end
 
--- Старт для текущих игроков в комнате
 for _, player in pairs(Players:GetPlayers()) do
     if player ~= LocalPlayer then espObjects[player] = createESPItems() end
 end
 
--- Отслеживание новых подключений
 Players.PlayerAdded:Connect(function(player)
     espObjects[player] = createESPItems()
 end)
@@ -77,14 +149,21 @@ Players.PlayerRemoving:Connect(function(player)
     removeESPItems(player)
 end)
 
--- Основной рабочий цикл рендеринга кадра
+-- Логика обновлений
 RunService.RenderStepped:Connect(function()
     watermark.Visible = true 
     
     if not ESP_Enabled then return end
 
-    -- Расчет нижней центральной точки дисплея
-    local screenCenterBottom = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+    -- Вычисление начальной точки линий на основе выбранного режима в меню
+    local startPoint
+    if Tracer_Mode == "Bottom" then
+        startPoint = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+    elseif Tracer_Mode == "Center" then
+        startPoint = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    elseif Tracer_Mode == "Top" then
+        startPoint = Vector2.new(Camera.ViewportSize.X / 2, 0)
+    end
 
     for player, obj in pairs(espObjects) do
         local character = player.Character
@@ -93,16 +172,11 @@ RunService.RenderStepped:Connect(function()
             local rootPart = character.HumanoidRootPart
             local vector, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
 
-            -- Логика распределения цветов: Зеленый — свои, Красный — чужие
-            local displayColor
-            if player.Team and LocalPlayer.Team then
-                if player.Team == LocalPlayer.Team then
-                    displayColor = Color3.fromRGB(50, 255, 50)  -- Союзник
-                else
-                    displayColor = Color3.fromRGB(255, 50, 50)  -- Враг
-                end
-            else
-                displayColor = Color3.fromRGB(255, 50, 50)      -- Одиночный режим / Все враги
+            -- АВТОМАТИЧЕСКИЙ ТИМЧЕК ДЛЯ ЛЮБОГО КОЛИЧЕСТВА КОМАНД
+            local displayColor = Color3.fromRGB(255, 255, 255) -- Белый дефолт
+            
+            if player.Team then
+                displayColor = player.TeamColor.Color -- Скрипт сам берет цвет команды из движка игры
             end
 
             obj.Box.Color = displayColor
@@ -112,13 +186,13 @@ RunService.RenderStepped:Connect(function()
                 local dist = (Camera.CFrame.Position - rootPart.Position).Magnitude
                 local scale = 1000 / dist
                 
-                -- Позиционирование 2D Рамки
+                -- Бокс
                 obj.Box.Size = Vector2.new(scale * 1.5, scale * 2.5)
                 obj.Box.Position = Vector2.new(vector.X - obj.Box.Size.X / 2, vector.Y - obj.Box.Size.Y / 2)
                 obj.Box.Visible = true
 
-                -- Позиционирование направляющей линии к ногам
-                obj.Tracer.From = screenCenterBottom
+                -- Направляющая линия
+                obj.Tracer.From = startPoint
                 obj.Tracer.To = Vector2.new(vector.X, vector.Y + (obj.Box.Size.Y / 2))
                 obj.Tracer.Visible = true
             else
@@ -132,4 +206,4 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-print("C00lkidd214anzz Hub Successfully Updated!")
+print("C00lkidd214anzz Advanced Hub Loaded!")
