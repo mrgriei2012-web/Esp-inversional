@@ -1,4 +1,4 @@
--- C00lkidd214anzz Hub (Advanced Menu + Multi-Team ESP)
+-- c00lkidd214anzz Hub (Advanced Menu + Multi-Team ESP)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
@@ -10,7 +10,7 @@ local espObjects = {}
 
 -- 1. Ватермарк
 local watermark = Drawing.new("Text")
-watermark.Text = "C00lkidd214anzz Hub"
+watermark.Text = "c00lkidd214anzz Hub"
 watermark.Size = 20
 watermark.Color = Color3.fromRGB(255, 255, 255)
 watermark.Outline = true
@@ -21,15 +21,15 @@ watermark.Font = 2
 -- 2. Создание полноценного GUI Меню
 local screenGui = Instance.new("ScreenGui", game.CoreGui or LocalPlayer:WaitForChild("PlayerGui"))
 
--- Главная кнопка открытия/закрытия меню
+-- Главная кнопка открытия/закрытия меню (С полным ником)
 local mainToggle = Instance.new("TextButton", screenGui)
-mainToggle.Size = UDim2.new(0, 130, 0, 45)
+mainToggle.Size = UDim2.new(0, 160, 0, 45) -- Немного увеличил ширину под полный ник
 mainToggle.Position = UDim2.new(0.1, 0, 0.1, 0)
-mainToggle.Text = "C00lkidd Menu"
+mainToggle.Text = "c00lkidd214anzz Menu"
 mainToggle.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 mainToggle.Font = Enum.Font.SourceSansBold
-mainToggle.TextSize = 16
+mainToggle.TextSize = 15
 mainToggle.Draggable = true
 mainToggle.Active = true
 
@@ -46,7 +46,6 @@ local uiCornerFrame = Instance.new("UICorner", menuFrame)
 -- Привязка меню к кнопке, чтобы его можно было открывать/закрывать кликом
 mainToggle.MouseButton1Click:Connect(function()
     menuFrame.Visible = not menuFrame.Visible
-    -- Обновляем позицию меню под кнопкой в момент открытия
     menuFrame.Position = UDim2.new(0, mainToggle.AbsolutePosition.X, 0, mainToggle.AbsolutePosition.Y + 55)
 end)
 
@@ -155,7 +154,7 @@ RunService.RenderStepped:Connect(function()
     
     if not ESP_Enabled then return end
 
-    -- Вычисление начальной точки линий на основе выбранного режима в меню
+    -- Вычисление начальной точки линий
     local startPoint
     if Tracer_Mode == "Bottom" then
         startPoint = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
@@ -172,11 +171,10 @@ RunService.RenderStepped:Connect(function()
             local rootPart = character.HumanoidRootPart
             local vector, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
 
-            -- АВТОМАТИЧЕСКИЙ ТИМЧЕК ДЛЯ ЛЮБОГО КОЛИЧЕСТВА КОМАНД
-            local displayColor = Color3.fromRGB(255, 255, 255) -- Белый дефолт
-            
+            -- Автоматический цвет под каждую тиму
+            local displayColor = Color3.fromRGB(255, 255, 255)
             if player.Team then
-                displayColor = player.TeamColor.Color -- Скрипт сам берет цвет команды из движка игры
+                displayColor = player.TeamColor.Color
             end
 
             obj.Box.Color = displayColor
@@ -191,7 +189,7 @@ RunService.RenderStepped:Connect(function()
                 obj.Box.Position = Vector2.new(vector.X - obj.Box.Size.X / 2, vector.Y - obj.Box.Size.Y / 2)
                 obj.Box.Visible = true
 
-                -- Направляющая линия
+                -- Линия
                 obj.Tracer.From = startPoint
                 obj.Tracer.To = Vector2.new(vector.X, vector.Y + (obj.Box.Size.Y / 2))
                 obj.Tracer.Visible = true
@@ -206,4 +204,4 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-print("C00lkidd214anzz Advanced Hub Loaded!")
+print("c00lkidd214anzz Advanced Hub Successfully Updated!")
