@@ -198,6 +198,48 @@ jumpBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+local Hitbox_Enabled = false
+local Hitbox_Size = 5 -- Размер хитбокса (насколько легко попасть)
+
+local hitBtn = Instance.new("TextButton", playerPage)
+hitBtn.Size = UDim2.new(0, 250, 0, 45)
+hitBtn.Position = UDim2.new(0, 15, 0, 130) -- Расположил ниже кнопки прыжка
+hitBtn.Text = "Hitbox: OFF"
+hitBtn.TextColor3 = Color3.new(1,1,1)
+hitBtn.Font = Enum.Font.SourceSansBold
+hitBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+hitBtn.ZIndex = 7
+Instance.new("UICorner", hitBtn)
+
+hitBtn.MouseButton1Click:Connect(function()
+    Hitbox_Enabled = not Hitbox_Enabled
+    hitBtn.Text = Hitbox_Enabled and "Hitbox: ON" or "Hitbox: OFF"
+    hitBtn.BackgroundColor3 = Hitbox_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(40,40,40)
+end)
+
+-- Логика расширения хитбоксов 
+RunService.RenderStepped:Connect(function()
+    if Hitbox_Enabled then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = p.Character.HumanoidRootPart
+                -- Увеличиваем размер (Transparency сделан 0.5, чтобы видеть, на что ты целишься)
+                hrp.Size = Vector3.new(Hitbox_Size, Hitbox_Size, Hitbox_Size)
+                hrp.Transparency = 0.5
+                hrp.BrickColor = BrickColor.new("Really red")
+                hrp.CanCollide = false
+            end
+        end
+    else
+        -- Возвращаем стандартный размер (2, 2, 1), если выключили
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                p.Character.HumanoidRootPart.Size = Vector3.new(2, 2, 1)
+                p.Character.HumanoidRootPart.Transparency = 1
+            end
+        end
+    end
+end)
 
 -- === ЛОГИКА ДВИЖЕНИЯ И ОТКРЫТИЯ МЕНЮ ===
 mainToggle.MouseButton1Click:Connect(function()
