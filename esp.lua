@@ -1,61 +1,316 @@
--- c00lkidd214anzz Hub (Classic Mode)
+-- c00lkidd214anzz Hub (Classic Black UI Edition - NO GRADIENTS)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
-local ESP_Enabled = false
+-- Настройки функций
+local ESP_Enabled = true
+local Tracer_Mode = "Bottom" -- "Bottom", "Center", "Top"
 local Custom_Speed = 16
+local Custom_Jump = 50
 local espObjects = {}
 
--- UI
-local screenGui = Instance.new("ScreenGui", game.CoreGui or LocalPlayer:WaitForChild("PlayerGui"))
+-- 1. Ватермарк
+local watermark = Drawing.new("Text")
+watermark.Text = "c00lkidd214anzz Hub"
+watermark.Size = 20
+watermark.Color = Color3.fromRGB(255, 255, 255)
+watermark.Outline = true
+watermark.Position = Vector2.new(10, 30)
+watermark.Visible = true
+watermark.Font = 2
 
+-- 2. Создание UI
+local screenGui = Instance.new("ScreenGui", game.CoreGui or LocalPlayer:WaitForChild("PlayerGui"))
+screenGui.ResetOnSpawn = false
+
+-- Главная перетаскиваемая кнопка-открывашка (Строгий темный стиль)
 local mainToggle = Instance.new("TextButton", screenGui)
-mainToggle.Size = UDim2.new(0, 100, 0, 40)
-mainToggle.Position = UDim2.new(0, 10, 0, 10)
-mainToggle.Text = "MENU"
-mainToggle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainToggle.Size = UDim2.new(0, 160, 0, 45)
+mainToggle.Position = UDim2.new(0.1, 0, 0.1, 0)
+mainToggle.Text = "c00lkidd214anzz Menu"
+mainToggle.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Чистый темно-серый
 mainToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainToggle.Font = Enum.Font.SourceSansBold
+mainToggle.TextSize = 15
 mainToggle.Draggable = true
 mainToggle.Active = true
+Instance.new("UICorner", mainToggle)
 
+-- Обводка кнопки для красоты
+local toggleStroke = Instance.new("UIStroke", mainToggle)
+toggleStroke.Color = Color3.fromRGB(60, 60, 60)
+toggleStroke.Thickness = 1
+
+-- === БОЛЬШОЕ ОСНОВНОЕ МЕНЮ ===
 local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 300, 0, 200)
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.Size = UDim2.new(0, 450, 0, 280)
+mainFrame.Position = UDim2.new(0.1, 0, 0.1, 55)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- Глубокий черный фон без градиентов
 mainFrame.Visible = false
-mainFrame.Draggable = true
-mainFrame.Active = true
+Instance.new("UICorner", mainFrame)
 
-mainToggle.MouseButton1Click:Connect(function() mainFrame.Visible = not mainFrame.Visible end)
+local menuStroke = Instance.new("UIStroke", mainFrame)
+menuStroke.Color = Color3.fromRGB(50, 50, 50)
+menuStroke.Thickness = 1
 
--- Кнопки
-local espBtn = Instance.new("TextButton", mainFrame)
-espBtn.Size = UDim2.new(0, 260, 0, 50)
-espBtn.Position = UDim2.new(0, 20, 0, 30)
-espBtn.Text = "ESP: OFF"
-espBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-espBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-espBtn.MouseButton1Click:Connect(function()
+-- Левая панель для вкладок (Сайдбар)
+local sidebar = Instance.new("Frame", mainFrame)
+sidebar.Size = UDim2.new(0, 130, 1, 0)
+sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15) -- Выделяющийся темный сайдбар
+local uiCornerSidebar = Instance.new("UICorner", sidebar)
+
+-- Контейнеры для содержимого вкладок
+local visualsPage = Instance.new("Frame", mainFrame)
+visualsPage.Size = UDim2.new(0, 300, 1, 0)
+visualsPage.Position = UDim2.new(0, 140, 0, 0)
+visualsPage.BackgroundTransparency = 1
+visualsPage.Visible = true
+
+local playerPage = Instance.new("Frame", mainFrame)
+playerPage.Size = UDim2.new(0, 300, 1, 0)
+playerPage.Position = UDim2.new(0, 140, 0, 0)
+playerPage.BackgroundTransparency = 1
+playerPage.Visible = false
+
+-- Функция переключения страниц
+local function showPage(page)
+    visualsPage.Visible = (page == visualsPage)
+    playerPage.Visible = (page == playerPage)
+end
+
+-- === КНОПКИ ВКЛАДОК В СИДБАРЕ ===
+local tabVisuals = Instance.new("TextButton", sidebar)
+tabVisuals.Size = UDim2.new(0, 110, 0, 35)
+tabVisuals.Position = UDim2.new(0, 10, 0, 20)
+tabVisuals.Text = "Visuals (ESP)"
+tabVisuals.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+tabVisuals.TextColor3 = Color3.fromRGB(255, 255, 255)
+tabVisuals.Font = Enum.Font.SourceSansBold
+tabVisuals.TextSize = 14
+Instance.new("UICorner", tabVisuals)
+tabVisuals.MouseButton1Click:Connect(function() showPage(visualsPage) end)
+
+local tabPlayer = Instance.new("TextButton", sidebar)
+tabPlayer.Size = UDim2.new(0, 110, 0, 35)
+tabPlayer.Position = UDim2.new(0, 10, 0, 65)
+tabPlayer.Text = "Player (Кастом)"
+tabPlayer.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+tabPlayer.TextColor3 = Color3.fromRGB(255, 255, 255)
+tabPlayer.Font = Enum.Font.SourceSansBold
+tabPlayer.TextSize = 14
+Instance.new("UICorner", tabPlayer)
+tabPlayer.MouseButton1Click:Connect(function() showPage(playerPage) end)
+
+-- === КОНТЕНТ ВКЛАДКИ VISUALS ===
+local espToggleBtn = Instance.new("TextButton", visualsPage)
+espToggleBtn.Size = UDim2.new(0, 280, 0, 45) -- Немного расширил для мобильного экрана
+espToggleBtn.Position = UDim2.new(0, 10, 0, 20)
+espToggleBtn.Text = "ESP: ON"
+espToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+espToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+espToggleBtn.Font = Enum.Font.SourceSansBold
+espToggleBtn.TextSize = 14
+Instance.new("UICorner", espToggleBtn)
+
+espToggleBtn.MouseButton1Click:Connect(function()
     ESP_Enabled = not ESP_Enabled
-    espBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
-end)
-
-local spdBtn = Instance.new("TextButton", mainFrame)
-spdBtn.Size = UDim2.new(0, 260, 0, 50)
-spdBtn.Position = UDim2.new(0, 20, 0, 100)
-spdBtn.Text = "SPEED: 16"
-spdBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-spdBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-spdBtn.MouseButton1Click:Connect(function()
-    Custom_Speed = (Custom_Speed == 16) and 50 or 16
-    spdBtn.Text = "SPEED: " .. Custom_Speed
-end)
-
--- Логика
-RunService.RenderStepped:Connect(function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = Custom_Speed
+    espToggleBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
+    espToggleBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+    if not ESP_Enabled then
+        for _, obj in pairs(espObjects) do 
+            obj.Box.Visible = false 
+            obj.Tracer.Visible = false 
+        end
     end
 end)
+
+local tracerLabel = Instance.new("TextLabel", visualsPage)
+tracerLabel.Size = UDim2.new(0, 280, 0, 20)
+tracerLabel.Position = UDim2.new(0, 10, 0, 85)
+tracerLabel.Text = "Положение линий трейсеров:"
+tracerLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+tracerLabel.BackgroundTransparency = 1
+tracerLabel.Font = Enum.Font.SourceSans
+tracerLabel.TextSize = 14
+tracerLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local tracerModeBtn = Instance.new("TextButton", visualsPage)
+tracerModeBtn.Size = UDim2.new(0, 280, 0, 45)
+tracerModeBtn.Position = UDim2.new(0, 10, 0, 110)
+tracerModeBtn.Text = "НИЗ ЭКРАНА"
+tracerModeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+tracerModeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+tracerModeBtn.Font = Enum.Font.SourceSansBold
+tracerModeBtn.TextSize = 14
+Instance.new("UICorner", tracerModeBtn)
+
+tracerModeBtn.MouseButton1Click:Connect(function()
+    if Tracer_Mode == "Bottom" then
+        Tracer_Mode = "Center"
+        tracerModeBtn.Text = "ЦЕНТР ЭКРАНА"
+    elseif Tracer_Mode == "Center" then
+        Tracer_Mode = "Top"
+        tracerModeBtn.Text = "ВВЕРХ ЭКРАНА"
+    else
+        Tracer_Mode = "Bottom"
+        tracerModeBtn.Text = "НИЗ ЭКРАНА"
+    end
+end)
+
+-- === КОНТЕНТ ВКЛАДКИ PLAYER ===
+local speedBtn = Instance.new("TextButton", playerPage)
+speedBtn.Size = UDim2.new(0, 280, 0, 45)
+speedBtn.Position = UDim2.new(0, 10, 0, 20)
+speedBtn.Text = "Быстрый бег: Выкл (16)"
+speedBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+speedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedBtn.Font = Enum.Font.SourceSansBold
+speedBtn.TextSize = 14
+Instance.new("UICorner", speedBtn)
+
+speedBtn.MouseButton1Click:Connect(function()
+    if Custom_Speed == 16 then
+        Custom_Speed = 50
+        speedBtn.Text = "Быстрый бег: Вкл (50)"
+        speedBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+    else
+        Custom_Speed = 16
+        speedBtn.Text = "Быстрый бег: Выкл (16)"
+        speedBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    end
+end)
+
+local jumpBtn = Instance.new("TextButton", playerPage)
+jumpBtn.Size = UDim2.new(0, 280, 0, 45)
+jumpBtn.Position = UDim2.new(0, 10, 0, 80)
+jumpBtn.Text = "Высокий прыжок: Выкл"
+jumpBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+jumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+jumpBtn.Font = Enum.Font.SourceSansBold
+jumpBtn.TextSize = 14
+Instance.new("UICorner", jumpBtn)
+
+jumpBtn.MouseButton1Click:Connect(function()
+    if Custom_Jump == 50 then
+        Custom_Jump = 120
+        jumpBtn.Text = "Высокий прыжок: Вкл (120)"
+        jumpBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+    else
+        Custom_Jump = 50
+        jumpBtn.Text = "Высокий прыжок: Выкл"
+        jumpBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    end
+end)
+
+-- === ЛОГИКА ДВИЖЕНИЯ И ОТКРЫТИЯ МЕНЮ ===
+mainToggle.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+    mainFrame.Position = UDim2.new(0, mainToggle.AbsolutePosition.X, 0, mainToggle.AbsolutePosition.Y + 55)
+end)
+
+mainToggle.Changed:Connect(function(prop)
+    if prop == "Position" then
+        mainFrame.Position = UDim2.new(0, mainToggle.AbsolutePosition.X, 0, mainToggle.AbsolutePosition.Y + 55)
+    end
+end)
+
+-- === МЕХАНИКА И ЯДРО ESP ===
+local function createESPItems()
+    local box = Drawing.new("Square")
+    box.Visible = false
+    box.Filled = false
+    box.Thickness = 2
+
+    local tracer = Drawing.new("Line")
+    tracer.Visible = false
+    tracer.Thickness = 1.5
+
+    return {Box = box, Tracer = tracer}
+end
+
+local function removeESPItems(player)
+    if espObjects[player] then
+        espObjects[player].Box:Remove()
+        espObjects[player].Tracer:Remove()
+        espObjects[player] = nil
+    end
+end
+
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then espObjects[player] = createESPItems() end
+end
+
+Players.PlayerAdded:Connect(function(player)
+    espObjects[player] = createESPItems()
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    removeESPItems(player)
+end)
+
+-- === ЦИКЛ ОБНОВЛЕНИЯ КАДРОВ ===
+RunService.RenderStepped:Connect(function()
+    watermark.Visible = true 
+    
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        local hum = LocalPlayer.Character.Humanoid
+        hum.WalkSpeed = Custom_Speed
+        if hum.UseJumpPower then
+            hum.JumpPower = Custom_Jump
+        else
+            hum.JumpHeight = Custom_Jump / 3
+        end
+    end
+
+    if not ESP_Enabled then return end
+
+    local startPoint
+    if Tracer_Mode == "Bottom" then
+        startPoint = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+    elseif Tracer_Mode == "Center" then
+        startPoint = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    elseif Tracer_Mode == "Top" then
+        startPoint = Vector2.new(Camera.ViewportSize.X / 2, 0)
+    end
+
+    for player, obj in pairs(espObjects) do
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") and character.Humanoid.Health > 0 then
+            
+            local rootPart = character.HumanoidRootPart
+            local vector, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
+
+            local displayColor = Color3.fromRGB(255, 255, 255)
+            if player.Team then
+                displayColor = player.TeamColor.Color
+            end
+
+            obj.Box.Color = displayColor
+            obj.Tracer.Color = displayColor
+
+            if onScreen then
+                local dist = (Camera.CFrame.Position - rootPart.Position).Magnitude
+                local scale = 1000 / dist
+                
+                obj.Box.Size = Vector2.new(scale * 1.5, scale * 2.5)
+                obj.Box.Position = Vector2.new(vector.X - obj.Box.Size.X / 2, vector.Y - obj.Box.Size.Y / 2)
+                obj.Box.Visible = true
+
+                obj.Tracer.From = startPoint
+                obj.Tracer.To = Vector2.new(vector.X, vector.Y + (obj.Box.Size.Y / 2))
+                obj.Tracer.Visible = true
+            else
+                obj.Box.Visible = false
+                obj.Tracer.Visible = false
+            end
+        else
+            obj.Box.Visible = false
+            obj.Tracer.Visible = false
+        end
+    end
+end)
+
+print("c00lkidd214anzz Classic Dark Hub Loaded!")
