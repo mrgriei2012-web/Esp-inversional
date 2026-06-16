@@ -1,4 +1,4 @@
--- c00lkidd214anzz Hub (Full Independent Edition)
+-- c00lkidd214anzz Hub (Independent Menu & Fixed UI)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
@@ -13,7 +13,7 @@ local espObjects = {}
 -- UI Setup
 local screenGui = Instance.new("ScreenGui", game.CoreGui or LocalPlayer:WaitForChild("PlayerGui"))
 
--- 1. Кнопка открытия
+-- 1. Кнопка открытия (Полностью независимая)
 local mainToggle = Instance.new("TextButton", screenGui)
 mainToggle.Size = UDim2.new(0, 160, 0, 45)
 mainToggle.Position = UDim2.new(0.1, 0, 0.1, 0)
@@ -26,16 +26,17 @@ mainToggle.Draggable = true
 mainToggle.Active = true
 Instance.new("UICorner", mainToggle)
 
--- 2. Большое меню
+-- 2. Большое меню (Двигается отдельно от кнопки)
 local mainFrame = Instance.new("Frame", screenGui)
 mainFrame.Size = UDim2.new(0, 450, 0, 280)
-mainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
+mainFrame.Position = UDim2.new(0.3, 0, 0.2, 0) -- Спавнится ближе к центру экрана
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.Visible = false
-mainFrame.Draggable = true
+mainFrame.Draggable = true -- Теперь меню можно перетаскивать отдельно!
 mainFrame.Active = true
 Instance.new("UICorner", mainFrame)
 
+-- Заголовок меню
 local titleLabel = Instance.new("TextLabel", mainFrame)
 titleLabel.Size = UDim2.new(1, 0, 0, 30)
 titleLabel.Text = " c00lkidd214anzz Settings"
@@ -44,6 +45,7 @@ titleLabel.BackgroundTransparency = 1
 titleLabel.Font = Enum.Font.SourceSansBold
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
+-- Движущаяся текстура-градиент на фоне меню
 local menuGradient = Instance.new("UIGradient", mainFrame)
 menuGradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 20, 20)),
@@ -51,36 +53,51 @@ menuGradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 20))
 })
 
-mainToggle.MouseButton1Click:Connect(function() mainFrame.Visible = not mainFrame.Visible end)
+-- Логика переключения видимости (без привязки координат!)
+mainToggle.MouseButton1Click:Connect(function() 
+    mainFrame.Visible = not mainFrame.Visible 
+end)
 
--- Вкладки
+-- Вкладки (Сайдбар)
 local sidebar = Instance.new("Frame", mainFrame)
-sidebar.Size = UDim2.new(0, 130, 1, -30); sidebar.Position = UDim2.new(0, 0, 0, 30)
-sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15); Instance.new("UICorner", sidebar)
+sidebar.Size = UDim2.new(0, 130, 1, -30)
+sidebar.Position = UDim2.new(0, 0, 0, 30)
+sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Instance.new("UICorner", sidebar)
 
 local visualsPage = Instance.new("Frame", mainFrame)
-visualsPage.Size = UDim2.new(0, 310, 1, -30); visualsPage.Position = UDim2.new(0, 135, 0, 35); visualsPage.BackgroundTransparency = 1
+visualsPage.Size = UDim2.new(0, 310, 1, -30)
+visualsPage.Position = UDim2.new(0, 135, 0, 35)
+visualsPage.BackgroundTransparency = 1
 
 local playerPage = Instance.new("Frame", mainFrame)
-playerPage.Size = UDim2.new(0, 310, 1, -30); playerPage.Position = UDim2.new(0, 135, 0, 35); playerPage.BackgroundTransparency = 1; playerPage.Visible = false
+playerPage.Size = UDim2.new(0, 310, 1, -30)
+playerPage.Position = UDim2.new(0, 135, 0, 35)
+playerPage.BackgroundTransparency = 1
+playerPage.Visible = false
 
 local function showPage(page)
     visualsPage.Visible = (page == visualsPage)
     playerPage.Visible = (page == playerPage)
 end
 
--- Кнопки вкладок
+-- Кнопки переключения вкладок
 local tabV = Instance.new("TextButton", sidebar)
-tabV.Size = UDim2.new(0, 110, 0, 35); tabV.Position = UDim2.new(0, 10, 0, 10); tabV.Text = "Visuals"; tabV.BackgroundColor3 = Color3.fromRGB(40, 40, 40); Instance.new("UICorner", tabV)
+tabV.Size = UDim2.new(0, 110, 0, 35); tabV.Position = UDim2.new(0, 10, 0, 10)
+tabV.Text = "Visuals"; tabV.BackgroundColor3 = Color3.fromRGB(40, 40, 40); tabV.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", tabV)
 tabV.MouseButton1Click:Connect(function() showPage(visualsPage) end)
 
 local tabP = Instance.new("TextButton", sidebar)
-tabP.Size = UDim2.new(0, 110, 0, 35); tabP.Position = UDim2.new(0, 10, 0, 50); tabP.Text = "Player"; tabP.BackgroundColor3 = Color3.fromRGB(40, 40, 40); Instance.new("UICorner", tabP)
+tabP.Size = UDim2.new(0, 110, 0, 35); tabP.Position = UDim2.new(0, 10, 0, 50)
+tabP.Text = "Player"; tabP.BackgroundColor3 = Color3.fromRGB(40, 40, 40); tabP.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", tabP)
 tabP.MouseButton1Click:Connect(function() showPage(playerPage) end)
 
--- [CONTENT]
+-- [КОНТЕНТ VISUALS]
 local espBtn = Instance.new("TextButton", visualsPage)
-espBtn.Size = UDim2.new(0, 250, 0, 40); espBtn.Text = "ESP: ON"; espBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50); Instance.new("UICorner", espBtn)
+espBtn.Size = UDim2.new(0, 250, 0, 40); espBtn.Text = "ESP: ON"
+espBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50); Instance.new("UICorner", espBtn)
 espBtn.MouseButton1Click:Connect(function()
     ESP_Enabled = not ESP_Enabled
     espBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
@@ -88,46 +105,58 @@ espBtn.MouseButton1Click:Connect(function()
 end)
 
 local trBtn = Instance.new("TextButton", visualsPage)
-trBtn.Size = UDim2.new(0, 250, 0, 40); trBtn.Position = UDim2.new(0, 0, 0, 50); trBtn.Text = "Линии: НИЗ"; trBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40); Instance.new("UICorner", trBtn)
+trBtn.Size = UDim2.new(0, 250, 0, 40); trBtn.Position = UDim2.new(0, 0, 0, 50); trBtn.Text = "Линии: НИЗ"
+trBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40); Instance.new("UICorner", trBtn)
 trBtn.MouseButton1Click:Connect(function()
     if Tracer_Mode == "Bottom" then Tracer_Mode = "Center"; trBtn.Text = "Линии: ЦЕНТР"
     elseif Tracer_Mode == "Center" then Tracer_Mode = "Top"; trBtn.Text = "Линии: ВВЕРХ"
     else Tracer_Mode = "Bottom"; trBtn.Text = "Линии: НИЗ" end
 end)
 
+-- [КОНТЕНТ PLAYER]
 local spdBtn = Instance.new("TextButton", playerPage)
-spdBtn.Size = UDim2.new(0, 250, 0, 40); spdBtn.Text = "Скорость: 16"; spdBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40); Instance.new("UICorner", spdBtn)
+spdBtn.Size = UDim2.new(0, 250, 0, 40); spdBtn.Text = "Скорость: 16"
+spdBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40); Instance.new("UICorner", spdBtn)
 spdBtn.MouseButton1Click:Connect(function()
     Custom_Speed = (Custom_Speed == 16) and 50 or 16
     spdBtn.Text = "Скорость: " .. Custom_Speed
 end)
 
--- LOGIC
+-- Анимация вращения фона
 task.spawn(function()
     while true do
-        for i = 0, 360, 5 do
+        for i = 0, 360, 4 do
             menuGradient.Rotation = i
-            task.wait(0.05)
+            task.wait(0.04)
         end
     end
 end)
 
+-- Функция создания ESP
 local function createESP()
     local box = Drawing.new("Square"); box.Visible = false; box.Filled = false; box.Thickness = 2
     local line = Drawing.new("Line"); line.Visible = false; line.Thickness = 1.5
     return {Box = box, Tracer = line}
 end
 
+-- Обработка игроков
 for _, p in pairs(Players:GetPlayers()) do if p ~= LocalPlayer then espObjects[p] = createESP() end end
 Players.PlayerAdded:Connect(function(p) espObjects[p] = createESP() end)
 Players.PlayerRemoving:Connect(function(p) if espObjects[p] then espObjects[p].Box:Remove(); espObjects[p].Tracer:Remove(); espObjects[p] = nil end end)
 
+-- Рендер-цикл (ESP + Скорость)
 RunService.RenderStepped:Connect(function()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = Custom_Speed
     end
-    if not ESP_Enabled then return end
+    
+    if not ESP_Enabled then 
+        for _, o in pairs(espObjects) do o.Box.Visible = false; o.Tracer.Visible = false end
+        return 
+    end
+    
     local start = (Tracer_Mode == "Bottom" and Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y)) or (Tracer_Mode == "Center" and Camera.ViewportSize/2) or Vector2.new(Camera.ViewportSize.X/2, 0)
+    
     for p, o in pairs(espObjects) do
         local char = p.Character
         if char and char:FindFirstChild("HumanoidRootPart") and char.Humanoid.Health > 0 then
@@ -141,3 +170,5 @@ RunService.RenderStepped:Connect(function()
         else o.Box.Visible = false; o.Tracer.Visible = false end
     end
 end)
+
+print("c00lkidd214anzz Hub Successfully Loaded from Esp-inversional!")
