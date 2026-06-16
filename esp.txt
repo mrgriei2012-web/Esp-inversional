@@ -1,0 +1,99 @@
+-- C00lkidd214anzz Hub
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+-- Настройки
+local ESP_Enabled = true
+local espObjects = {}
+
+-- 1. Создаем Ватермарк
+local watermark = Drawing.new("Text")
+watermark.Text = "C00lkidd214anzz Hub"
+watermark.Size = 20
+watermark.Color = Color3.fromRGB(255, 255, 255)
+watermark.Outline = true -- Обводка текста
+watermark.Position = Vector2.new(10, 30)
+watermark.Visible = true
+watermark.Font = 2
+
+-- 2. Создание GUI кнопки
+local screenGui = Instance.new("ScreenGui", game.CoreGui or LocalPlayer:WaitForChild("PlayerGui"))
+local button = Instance.new("TextButton", screenGui)
+button.Size = UDim2.new(0, 120, 0, 50)
+button.Position = UDim2.new(0.1, 0, 0.1, 0)
+button.Text = "ESP: ON"
+button.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+button.Draggable = true
+button.Active = true
+
+button.MouseButton1Click:Connect(function()
+    ESP_Enabled = not ESP_Enabled
+    button.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
+    button.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+    
+    if not ESP_Enabled then
+        for _, box in pairs(espObjects) do box.Visible = false end
+    end
+end)
+
+-- Функции ESP
+local function createBox()
+    local box = Drawing.new("Square")
+    box.Visible = false
+    box.Filled = false
+    box.Thickness = 2
+    return box
+end
+
+-- Инициализация игроков
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then espObjects[player] = createBox() end
+end
+
+Players.PlayerAdded:Connect(function(player)
+    espObjects[player] = createBox()
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    if espObjects[player] then espObjects[player]:Remove(); espObjects[player] = nil end
+end)
+
+-- Цикл отрисовки
+RunService.RenderStepped:Connect(function()
+    -- Ватермарк всегда видим
+    watermark.Visible = true 
+    
+    if not ESP_Enabled then return end
+
+    for player, box in pairs(espObjects) do
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") and character.Humanoid.Health > 0 then
+            local rootPart = character.HumanoidRootPart
+            local vector, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
+
+            -- Цвет команды
+            if player.Team then 
+                box.Color = player.TeamColor.Color 
+            else 
+                box.Color = Color3.fromRGB(255, 255, 255) 
+            end
+
+            if onScreen then
+                local dist = (Camera.CFrame.Position - rootPart.Position).Magnitude
+                local scale = 1000 / dist
+                box.Size = Vector2.new(scale * 1.5, scale * 2.5)
+                box.Position = Vector2.new(vector.X - box.Size.X / 2, vector.Y - box.Size.Y / 2)
+                box.Visible = true
+            else
+                box.Visible = false
+            end
+        else
+            box.Visible = false
+        end
+    end
+end)
+
+print("C00lkidd214anzz Hub Successfully Loaded!")
