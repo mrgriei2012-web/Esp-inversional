@@ -152,10 +152,13 @@ end)
 
 
 -- === КОНТЕНТ ВКЛАДКИ PLAYER ===
--- Скорость бега
+
+
+-- Сама логика ноклипа (Вставить внутрь твоего цикла RunService.RenderStepped)
+-- Кнопка: БЫСТРЫЙ БЕГ
 local speedBtn = Instance.new("TextButton", playerPage)
-speedBtn.Size = UDim2.new(0, 200, 0, 40)
-speedBtn.Position = UDim2.new(0, 10, 0, 20)
+speedBtn.Size = UDim2.new(0, 250, 0, 40)
+speedBtn.Position = UDim2.new(0, 15, 0, 20) -- Первая кнопка
 speedBtn.Text = "Быстрый бег: Выкл (16)"
 speedBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 speedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -164,21 +167,15 @@ speedBtn.TextSize = 14
 Instance.new("UICorner", speedBtn)
 
 speedBtn.MouseButton1Click:Connect(function()
-    if Custom_Speed == 16 then
-        Custom_Speed = 50 -- Твоя новая скорость
-        speedBtn.Text = "Быстрый бег: Вкл (50)"
-        speedBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-    else
-        Custom_Speed = 16
-        speedBtn.Text = "Быстрый бег: Выкл (16)"
-        speedBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    end
+    Custom_Speed = (Custom_Speed == 16) and 50 or 16
+    speedBtn.Text = "Быстрый бег: " .. (Custom_Speed == 50 and "Вкл (50)" or "Выкл (16)")
+    speedBtn.BackgroundColor3 = Custom_Speed == 50 and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
 end)
 
--- Высота прыжка
+-- Кнопка: ВЫСОКИЙ ПРЫЖОК
 local jumpBtn = Instance.new("TextButton", playerPage)
-jumpBtn.Size = UDim2.new(0, 200, 0, 40)
-jumpBtn.Position = UDim2.new(0, 10, 0, 75)
+jumpBtn.Size = UDim2.new(0, 250, 0, 40)
+jumpBtn.Position = UDim2.new(0, 15, 0, 70) -- Вторая кнопка (ниже на 50px)
 jumpBtn.Text = "Высокий прыжок: Выкл"
 jumpBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 jumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -187,65 +184,33 @@ jumpBtn.TextSize = 14
 Instance.new("UICorner", jumpBtn)
 
 jumpBtn.MouseButton1Click:Connect(function()
-    if Custom_Jump == 50 then
-        Custom_Jump = 120 -- Твоя новая высота прыжка
-        jumpBtn.Text = "Высокий прыжок: Вкл (120)"
-        jumpBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-    else
-        Custom_Jump = 50
-        jumpBtn.Text = "Высокий прыжок: Выкл"
-        jumpBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    end
+    Custom_Jump = (Custom_Jump == 50) and 120 or 50
+    jumpBtn.Text = "Высокий прыжок: " .. (Custom_Jump == 120 and "Вкл" or "Выкл")
+    jumpBtn.BackgroundColor3 = Custom_Jump == 120 and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
 end)
 
-local Hitbox_Enabled = false
-local Hitbox_Size = 5 -- Размер хитбокса (насколько легко попасть)
+-- Кнопка: ХИТБОКСЫ
+local hitboxBtn = Instance.new("TextButton", playerPage)
+hitboxBtn.Size = UDim2.new(0, 250, 0, 40)
+hitboxBtn.Position = UDim2.new(0, 15, 0, 120) -- Третья кнопка (ниже на 50px)
+hitboxBtn.Text = "Hitbox: OFF"
+hitboxBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+hitboxBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+hitboxBtn.Font = Enum.Font.SourceSansBold
+hitboxBtn.TextSize = 14
+Instance.new("UICorner", hitboxBtn)
 
-local hitBtn = Instance.new("TextButton", playerPage)
-hitBtn.Size = UDim2.new(0, 250, 0, 45)
-hitBtn.Position = UDim2.new(0, 15, 0, 130) -- Расположил ниже кнопки прыжка
-hitBtn.Text = "Hitbox: OFF"
-hitBtn.TextColor3 = Color3.new(1,1,1)
-hitBtn.Font = Enum.Font.SourceSansBold
-hitBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-hitBtn.ZIndex = 7
-Instance.new("UICorner", hitBtn)
-
-hitBtn.MouseButton1Click:Connect(function()
+hitboxBtn.MouseButton1Click:Connect(function()
     Hitbox_Enabled = not Hitbox_Enabled
-    hitBtn.Text = Hitbox_Enabled and "Hitbox: ON" or "Hitbox: OFF"
-    hitBtn.BackgroundColor3 = Hitbox_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(40,40,40)
+    hitboxBtn.Text = Hitbox_Enabled and "Hitbox: ON" or "Hitbox: OFF"
+    hitboxBtn.BackgroundColor3 = Hitbox_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
 end)
 
--- Логика расширения хитбоксов 
-RunService.RenderStepped:Connect(function()
-    if Hitbox_Enabled then
-        for _, p in pairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                local hrp = p.Character.HumanoidRootPart
-                -- Увеличиваем размер (Transparency сделан 0.5, чтобы видеть, на что ты целишься)
-                hrp.Size = Vector3.new(Hitbox_Size, Hitbox_Size, Hitbox_Size)
-                hrp.Transparency = 0.5
-                hrp.BrickColor = BrickColor.new("Really red")
-                hrp.CanCollide = false
-            end
-        end
-    else
-        -- Возвращаем стандартный размер (2, 2, 1), если выключили
-        for _, p in pairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                p.Character.HumanoidRootPart.Size = Vector3.new(2, 2, 1)
-                p.Character.HumanoidRootPart.Transparency = 1
-            end
-        end
-    end
-end)
-
--- Кнопка Ноклипа (Вставить к остальным кнопкам в playerPage)
+-- Кнопка: НОКЛИП
 local Noclip_Enabled = false
 local noclipBtn = Instance.new("TextButton", playerPage)
-noclipBtn.Size = UDim2.new(0, 200, 0, 40)
-noclipBtn.Position = UDim2.new(0, 10, 0, 130) -- Позиция (поменяй Y, если перекрывает прыжок)
+noclipBtn.Size = UDim2.new(0, 250, 0, 40)
+noclipBtn.Position = UDim2.new(0, 15, 0, 170) -- Четвертая кнопка (теперь встанет идеально ниже всех)
 noclipBtn.Text = "Ноклип: Выкл"
 noclipBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 noclipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -258,15 +223,6 @@ noclipBtn.MouseButton1Click:Connect(function()
     noclipBtn.Text = Noclip_Enabled and "Ноклип: Вкл" or "Ноклип: Выкл"
     noclipBtn.BackgroundColor3 = Noclip_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
 end)
-
--- Сама логика ноклипа (Вставить внутрь твоего цикла RunService.RenderStepped)
-if Noclip_Enabled and LocalPlayer.Character then
-    for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = false
-        end
-    end
-end
 
 -- === ЛОГИКА ДВИЖЕНИЯ И ОТКРЫТИЯ МЕНЮ ===
 mainToggle.MouseButton1Click:Connect(function()
@@ -381,6 +337,17 @@ RunService.RenderStepped:Connect(function()
         else
             obj.Box.Visible = false
             obj.Tracer.Visible = false
+        end
+    end
+end)
+
+-- Изолированный поток ноклипа, который не ломает игру
+RunService.Stepped:Connect(function()
+    if Noclip_Enabled and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide == true then
+                part.CanCollide = false
+            end
         end
     end
 end)
