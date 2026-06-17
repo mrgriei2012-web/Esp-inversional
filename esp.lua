@@ -241,6 +241,33 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+-- Кнопка Ноклипа (Вставить к остальным кнопкам в playerPage)
+local Noclip_Enabled = false
+local noclipBtn = Instance.new("TextButton", playerPage)
+noclipBtn.Size = UDim2.new(0, 200, 0, 40)
+noclipBtn.Position = UDim2.new(0, 10, 0, 130) -- Позиция (поменяй Y, если перекрывает прыжок)
+noclipBtn.Text = "Ноклип: Выкл"
+noclipBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+noclipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+noclipBtn.Font = Enum.Font.SourceSansBold
+noclipBtn.TextSize = 14
+Instance.new("UICorner", noclipBtn)
+
+noclipBtn.MouseButton1Click:Connect(function()
+    Noclip_Enabled = not Noclip_Enabled
+    noclipBtn.Text = Noclip_Enabled and "Ноклип: Вкл" or "Ноклип: Выкл"
+    noclipBtn.BackgroundColor3 = Noclip_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
+end)
+
+-- Сама логика ноклипа (Вставить внутрь твоего цикла RunService.RenderStepped)
+if Noclip_Enabled and LocalPlayer.Character then
+    for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+end
+
 -- === ЛОГИКА ДВИЖЕНИЯ И ОТКРЫТИЯ МЕНЮ ===
 mainToggle.MouseButton1Click:Connect(function()
     mainFrame.Visible = not mainFrame.Visible
