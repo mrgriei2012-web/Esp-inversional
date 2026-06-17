@@ -352,4 +352,124 @@ RunService.Stepped:Connect(function()
     end
 end)
 
+-- ========================================================
+-- ВСЯ ЛОГИКА И КНОПКИ ДЛЯ ВКЛАДКИ PLAYER (КАСТОМ)
+-- ========================================================
+
+-- Переменные (строго НАД кнопками, чтобы логика их видела)
+local Custom_Speed = 16
+local Custom_Jump = 50
+local Hitbox_Enabled = false
+local Noclip_Enabled = false
+local Hitbox_Size = 5 -- Размер хитбокса
+
+-- Кнопка: БЫСТРЫЙ БЕГ (Y: 20)
+local speedBtn = Instance.new("TextButton", playerPage)
+speedBtn.Size = UDim2.new(0, 250, 0, 40)
+speedBtn.Position = UDim2.new(0, 15, 0, 20)
+speedBtn.Text = "Быстрый бег: Выкл (16)"
+speedBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+speedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedBtn.Font = Enum.Font.SourceSansBold
+speedBtn.TextSize = 14
+speedBtn.ZIndex = 8
+Instance.new("UICorner", speedBtn)
+
+speedBtn.MouseButton1Click:Connect(function()
+    Custom_Speed = (Custom_Speed == 16) and 50 or 16
+    speedBtn.Text = "Быстрый бег: " .. (Custom_Speed == 50 and "Вкл (50)" or "Выкл (16)")
+    speedBtn.BackgroundColor3 = Custom_Speed == 50 and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
+end)
+
+-- Кнопка: ВЫСОКИЙ ПРЫЖОК (Y: 70)
+local jumpBtn = Instance.new("TextButton", playerPage)
+jumpBtn.Size = UDim2.new(0, 250, 0, 40)
+jumpBtn.Position = UDim2.new(0, 15, 0, 70)
+jumpBtn.Text = "Высокий прыжок: Выкл"
+jumpBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+jumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+jumpBtn.Font = Enum.Font.SourceSansBold
+jumpBtn.TextSize = 14
+jumpBtn.ZIndex = 8
+Instance.new("UICorner", jumpBtn)
+
+jumpBtn.MouseButton1Click:Connect(function()
+    Custom_Jump = (Custom_Jump == 50) and 120 or 50
+    jumpBtn.Text = "Высокий прыжок: " .. (Custom_Jump == 120 and "Вкл" or "Выкл")
+    jumpBtn.BackgroundColor3 = Custom_Jump == 120 and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
+end)
+
+-- Кнопка: ХИТБОКСЫ (Y: 120)
+local hitboxBtn = Instance.new("TextButton", playerPage)
+hitboxBtn.Size = UDim2.new(0, 250, 0, 40)
+hitboxBtn.Position = UDim2.new(0, 15, 0, 120)
+hitboxBtn.Text = "Hitbox: OFF"
+hitboxBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+hitboxBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+hitboxBtn.Font = Enum.Font.SourceSansBold
+hitboxBtn.TextSize = 14
+hitboxBtn.ZIndex = 8
+Instance.new("UICorner", hitboxBtn)
+
+hitboxBtn.MouseButton1Click:Connect(function()
+    Hitbox_Enabled = not Hitbox_Enabled
+    hitboxBtn.Text = Hitbox_Enabled and "Hitbox: ON" or "Hitbox: OFF"
+    hitboxBtn.BackgroundColor3 = Hitbox_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
+end)
+
+-- Кнопка: НОКЛИП (Y: 170)
+local noclipBtn = Instance.new("TextButton", playerPage)
+noclipBtn.Size = UDim2.new(0, 250, 0, 40)
+noclipBtn.Position = UDim2.new(0, 15, 0, 170)
+noclipBtn.Text = "Ноклип: Выкл"
+noclipBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+noclipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+noclipBtn.Font = Enum.Font.SourceSansBold
+noclipBtn.TextSize = 14
+noclipBtn.ZIndex = 8
+Instance.new("UICorner", noclipBtn)
+
+noclipBtn.MouseButton1Click:Connect(function()
+    Noclip_Enabled = not Noclip_Enabled
+    noclipBtn.Text = Noclip_Enabled and "Ноклип: Вкл" or "Ноклип: Выкл"
+    noclipBtn.BackgroundColor3 = Noclip_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
+end)
+
+-- ПОЛНЫЙ ИГРОВОЙ ЦИКЛ ОБНОВЛЕНИЯ ФУНКЦИЙ (Всё в одном месте)
+RunService.RenderStepped:Connect(function()
+    -- 1. Применяем Скорость и Прыжок к твоему персонажу
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = Custom_Speed
+        LocalPlayer.Character.Humanoid.JumpPower = Custom_Jump
+    end
+
+    -- 2. Применяем Ноклип к твоему персонажу
+    if Noclip_Enabled and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+
+    -- 3. Применяем Хитбоксы и их Красную Подсветку к ОСТАЛЬНЫМ игрокам
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = player.Character.HumanoidRootPart
+            
+            if Hitbox_Enabled then
+                -- Включаем хитбокс: делаем его огромным кубом
+                hrp.Size = Vector3.new(Hitbox_Size, Hitbox_Size, Hitbox_Size)
+                hrp.Transparency = 0.5 -- Полупрозрачный, чтобы видеть границы
+                hrp.BrickColor = BrickColor.new("Really red") -- Подсвечиваем красным
+                hrp.CanCollide = false
+            else
+                -- Возвращаем стандартные настройки Roblox, если выключено
+                hrp.Size = Vector3.new(2, 2, 1)
+                hrp.Transparency = 1
+            end
+        end
+    end
+end)
+
 print("c00lkidd214anzz Large Tab-Menu Loaded Successfully!")
