@@ -1,4 +1,4 @@
--- c00lkidd214anzz Hub (Compact Scrolling Edition)
+-- c00lkidd214anzz Hub (Ultimate Master Edition 2026)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
@@ -16,20 +16,44 @@ local Noclip_Enabled = false
 local Flying = false
 local SpinBot_Enabled = false
 
-local Tracer_Mode = "Bottom" -- "Bottom", "Center", "Top"
-local Tracer_Color_Mode = "Team" -- "Team", "Red", "Green", "Blue", "Rainbow"
-local Custom_Speed = 16
-local Custom_Jump = 50
+-- Новые ультимативные функции
+local InfJump_Enabled = false
+local Aimbot_Enabled = false
+local AutoParry_Enabled = false
+local MM2_Revealer = false
+
+local Tracer_Mode = "Bottom"
+local Tracer_Color_Mode = "Team"
+local Cheat_Speed = 50
+local Cheat_Jump = 120
 local Hitbox_Size = 5
 local FlySpeed = 50
 
+-- Оригинальные параметры
+local Original_Speed = 16
+local Original_Jump = 50
+local Original_UseJumpPower = true
+
+local function SaveOriginalStats(character)
+    local hum = character:WaitForChild("Humanoid", 5)
+    if hum then
+        Original_Speed = hum.WalkSpeed
+        Original_UseJumpPower = hum.UseJumpPower
+        Original_Jump = hum.UseJumpPower and hum.JumpPower or hum.JumpHeight
+    end
+end
+if LocalPlayer.Character then SaveOriginalStats(LocalPlayer.Character) end
+LocalPlayer.CharacterAdded:Connect(SaveOriginalStats)
+
+local Speed_Enabled = false
+local Jump_Enabled = false
 local espObjects = {}
 local skeletons = {}
 local currentRgbColor = Color3.new(1,1,1)
 
--- 1. Ватермарк
+-- Ватермарк
 local watermark = Drawing.new("Text")
-watermark.Text = "c00lkidd214anzz Hub"
+watermark.Text = "c00lkidd214anzz Hub v3"
 watermark.Size = 20
 watermark.Color = Color3.fromRGB(255, 255, 255)
 watermark.Outline = true
@@ -37,55 +61,24 @@ watermark.Position = Vector2.new(10, 30)
 watermark.Visible = true
 watermark.Font = 2
 
--- 2. Создание UI
+-- Создание UI
 local screenGui = Instance.new("ScreenGui", game.CoreGui or LocalPlayer:WaitForChild("PlayerGui"))
 screenGui.ResetOnSpawn = false
 
--- Главная перетаскиваемая кнопка-открывашка
 local mainToggle = Instance.new("TextButton", screenGui)
-mainToggle.Size = UDim2.new(0, 160, 0, 45)
-mainToggle.Position = UDim2.new(0.1, 0, 0.1, 0)
-mainToggle.Text = "c00lkidd214anzz Menu"
-mainToggle.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-mainToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-mainToggle.Font = Enum.Font.SourceSansBold
-mainToggle.TextSize = 15
-mainToggle.Draggable = true
-mainToggle.Active = true
-mainToggle.ZIndex = 10
-Instance.new("UICorner", mainToggle)
+mainToggle.Size = UDim2.new(0, 160, 0, 45); mainToggle.Position = UDim2.new(0.1, 0, 0.1, 0); mainToggle.Text = "c00lkidd214anzz Menu"; mainToggle.BackgroundColor3 = Color3.fromRGB(30, 30, 30); mainToggle.TextColor3 = Color3.fromRGB(255, 255, 255); mainToggle.Font = Enum.Font.SourceSansBold; mainToggle.TextSize = 15; mainToggle.Draggable = true; mainToggle.Active = true; mainToggle.ZIndex = 10; Instance.new("UICorner", mainToggle)
 
--- === БОЛЬШОЕ ОСНОВНОЕ МЕНЮ (Возвращено к компактному размеру 280) ===
 local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 450, 0, 280)
-mainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-mainFrame.Visible = false
-mainFrame.Draggable = true
-mainFrame.Active = true
-mainFrame.ZIndex = 5
-Instance.new("UICorner", mainFrame)
+mainFrame.Size = UDim2.new(0, 450, 0, 280); mainFrame.Position = UDim2.new(0.3, 0, 0.3, 0); mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20); mainFrame.Visible = false; mainFrame.Draggable = true; mainFrame.Active = true; mainFrame.ZIndex = 5; Instance.new("UICorner", mainFrame)
 
-mainToggle.MouseButton1Click:Connect(function()
-    mainFrame.Visible = not mainFrame.Visible
-end)
+mainToggle.MouseButton1Click:Connect(function() mainFrame.Visible = not mainFrame.Visible end)
 
--- Левая панель для вкладок (Сайдбар)
 local sidebar = Instance.new("Frame", mainFrame)
-sidebar.Size = UDim2.new(0, 130, 1, 0)
-sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-sidebar.ZIndex = 6
-Instance.new("UICorner", sidebar)
+sidebar.Size = UDim2.new(0, 130, 1, 0); sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15); sidebar.ZIndex = 6; Instance.new("UICorner", sidebar)
 
--- Контейнеры для содержимого вкладок
-local visualsPage = Instance.new("Frame", mainFrame)
-visualsPage.Size = UDim2.new(0, 300, 1, 0); visualsPage.Position = UDim2.new(0, 140, 0, 0); visualsPage.BackgroundTransparency = 1; visualsPage.Visible = true; visualsPage.ZIndex = 6
-
-local playerPage = Instance.new("Frame", mainFrame)
-playerPage.Size = UDim2.new(0, 300, 1, 0); playerPage.Position = UDim2.new(0, 140, 0, 0); playerPage.BackgroundTransparency = 1; playerPage.Visible = false; playerPage.ZIndex = 6
-
-local teleportsPage = Instance.new("Frame", mainFrame)
-teleportsPage.Size = UDim2.new(0, 300, 1, 0); teleportsPage.Position = UDim2.new(0, 140, 0, 0); teleportsPage.BackgroundTransparency = 1; teleportsPage.Visible = false; teleportsPage.ZIndex = 6
+local visualsPage = Instance.new("Frame", mainFrame); visualsPage.Size = UDim2.new(0, 300, 1, 0); visualsPage.Position = UDim2.new(0, 140, 0, 0); visualsPage.BackgroundTransparency = 1; visualsPage.Visible = true; visualsPage.ZIndex = 6
+local playerPage = Instance.new("Frame", mainFrame); playerPage.Size = UDim2.new(0, 300, 1, 0); playerPage.Position = UDim2.new(0, 140, 0, 0); playerPage.BackgroundTransparency = 1; playerPage.Visible = false; playerPage.ZIndex = 6
+local teleportsPage = Instance.new("Frame", mainFrame); teleportsPage.Size = UDim2.new(0, 300, 1, 0); teleportsPage.Position = UDim2.new(0, 140, 0, 0); teleportsPage.BackgroundTransparency = 1; teleportsPage.Visible = false; teleportsPage.ZIndex = 6
 
 local function showPage(page)
     visualsPage.Visible = (page == visualsPage)
@@ -93,23 +86,18 @@ local function showPage(page)
     teleportsPage.Visible = (page == teleportsPage)
 end
 
--- Кнопки вкладок в сайдбаре
 local tabVisuals = Instance.new("TextButton", sidebar)
-tabVisuals.Size = UDim2.new(0, 110, 0, 35); tabVisuals.Position = UDim2.new(0, 10, 0, 20); tabVisuals.Text = "Visuals (ESP)"; tabVisuals.BackgroundColor3 = Color3.fromRGB(35, 35, 35); tabVisuals.TextColor3 = Color3.new(1,1,1); tabVisuals.Font = Enum.Font.SourceSansBold; tabVisuals.ZIndex = 7; Instance.new("UICorner", tabVisuals)
-tabVisuals.MouseButton1Click:Connect(function() showPage(visualsPage) end)
+tabVisuals.Size = UDim2.new(0, 110, 0, 35); tabVisuals.Position = UDim2.new(0, 10, 0, 20); tabVisuals.Text = "Visuals (ESP)"; tabVisuals.BackgroundColor3 = Color3.fromRGB(35, 35, 35); tabVisuals.TextColor3 = Color3.new(1,1,1); tabVisuals.Font = Enum.Font.SourceSansBold; tabVisuals.ZIndex = 7; Instance.new("UICorner", tabVisuals); tabVisuals.MouseButton1Click:Connect(function() showPage(visualsPage) end)
 
 local tabPlayer = Instance.new("TextButton", sidebar)
-tabPlayer.Size = UDim2.new(0, 110, 0, 35); tabPlayer.Position = UDim2.new(0, 10, 0, 65); tabPlayer.Text = "Player (Кастом)"; tabPlayer.BackgroundColor3 = Color3.fromRGB(35, 35, 35); tabPlayer.TextColor3 = Color3.new(1,1,1); tabPlayer.Font = Enum.Font.SourceSansBold; tabPlayer.ZIndex = 7; Instance.new("UICorner", tabPlayer)
-tabPlayer.MouseButton1Click:Connect(function() showPage(playerPage) end)
+tabPlayer.Size = UDim2.new(0, 110, 0, 35); tabPlayer.Position = UDim2.new(0, 10, 0, 65); tabPlayer.Text = "Main / Player"; tabPlayer.BackgroundColor3 = Color3.fromRGB(35, 35, 35); tabPlayer.TextColor3 = Color3.new(1,1,1); tabPlayer.Font = Enum.Font.SourceSansBold; tabPlayer.ZIndex = 7; Instance.new("UICorner", tabPlayer); tabPlayer.MouseButton1Click:Connect(function() showPage(playerPage) end)
 
 local tabTeleports = Instance.new("TextButton", sidebar)
-tabTeleports.Size = UDim2.new(0, 110, 0, 35); tabTeleports.Position = UDim2.new(0, 10, 0, 110); tabTeleports.Text = "Teleports"; tabTeleports.BackgroundColor3 = Color3.fromRGB(35, 35, 35); tabTeleports.TextColor3 = Color3.new(1,1,1); tabTeleports.Font = Enum.Font.SourceSansBold; tabTeleports.ZIndex = 7; Instance.new("UICorner", tabTeleports)
-tabTeleports.MouseButton1Click:Connect(function() showPage(teleportsPage) end)
+tabTeleports.Size = UDim2.new(0, 110, 0, 35); tabTeleports.Position = UDim2.new(0, 10, 0, 110); tabTeleports.Text = "Teleports"; tabTeleports.BackgroundColor3 = Color3.fromRGB(35, 35, 35); tabTeleports.TextColor3 = Color3.new(1,1,1); tabTeleports.Font = Enum.Font.SourceSansBold; tabTeleports.ZIndex = 7; Instance.new("UICorner", tabTeleports); tabTeleports.MouseButton1Click:Connect(function() showPage(teleportsPage) end)
 
-
--- === СКРОЛЛ-СПИСОК ДЛЯ VISUALS ===
+-- === СКРОЛЛ VISUALS ===
 local visualsScroll = Instance.new("ScrollingFrame", visualsPage)
-visualsScroll.Size = UDim2.new(0, 290, 0, 250); visualsScroll.Position = UDim2.new(0, 0, 0, 15); visualsScroll.BackgroundTransparency = 1; visualsScroll.ScrollBarThickness = 5; visualsScroll.CanvasSize = UDim2.new(0, 0, 0, 380); visualsScroll.ZIndex = 7
+visualsScroll.Size = UDim2.new(0, 290, 0, 250); visualsScroll.Position = UDim2.new(0, 0, 0, 15); visualsScroll.BackgroundTransparency = 1; visualsScroll.ScrollBarThickness = 5; visualsScroll.CanvasSize = UDim2.new(0, 0, 0, 420); visualsScroll.ZIndex = 7
 
 local espToggleBtn = Instance.new("TextButton", visualsScroll)
 espToggleBtn.Size = UDim2.new(0, 200, 0, 35); espToggleBtn.Position = UDim2.new(0, 10, 0, 0); espToggleBtn.Text = "ESP: OFF"; espToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); espToggleBtn.TextColor3 = Color3.new(1,1,1); espToggleBtn.Font = Enum.Font.SourceSansBold; espToggleBtn.ZIndex = 8; Instance.new("UICorner", espToggleBtn)
@@ -132,14 +120,14 @@ rgbChamsBtn.Size = UDim2.new(0, 200, 0, 35); rgbChamsBtn.Position = UDim2.new(0,
 local skelBtn = Instance.new("TextButton", visualsScroll)
 skelBtn.Size = UDim2.new(0, 200, 0, 35); skelBtn.Position = UDim2.new(0, 10, 0, 160); skelBtn.Text = "Скелетоны: Выкл"; skelBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); skelBtn.TextColor3 = Color3.new(1,1,1); skelBtn.Font = Enum.Font.SourceSansBold; skelBtn.ZIndex = 8; Instance.new("UICorner", skelBtn)
 
-local colorModeBtn = Instance.new("TextButton", visualsScroll)
-colorModeBtn.Size = UDim2.new(0, 200, 0, 35); colorModeBtn.Position = UDim2.new(0, 10, 0, 200); colorModeBtn.Text = "Цвет ESP: Командный"; colorModeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); colorModeBtn.TextColor3 = Color3.new(1,1,1); colorModeBtn.Font = Enum.Font.SourceSansBold; colorModeBtn.ZIndex = 8; Instance.new("UICorner", colorModeBtn)
+local mm2Btn = Instance.new("TextButton", visualsScroll)
+mm2Btn.Size = UDim2.new(0, 200, 0, 35); mm2Btn.Position = UDim2.new(0, 10, 0, 200); mm2Btn.Text = "MM2 Роли: Выкл"; mm2Btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); mm2Btn.TextColor3 = Color3.new(1,1,1); mm2Btn.Font = Enum.Font.SourceSansBold; mm2Btn.ZIndex = 8; Instance.new("UICorner", mm2Btn)
 
-local tracerLabel = Instance.new("TextLabel", visualsScroll)
-tracerLabel.Size = UDim2.new(0, 200, 0, 20); tracerLabel.Position = UDim2.new(0, 10, 0, 240); tracerLabel.Text = "Положение линий трейсеров:"; tracerLabel.TextColor3 = Color3.fromRGB(180, 180, 180); tracerLabel.BackgroundTransparency = 1; tracerLabel.Font = Enum.Font.SourceSans; tracerLabel.TextSize = 14; tracerLabel.TextXAlignment = Enum.TextXAlignment.Left; tracerLabel.ZIndex = 8
+local colorModeBtn = Instance.new("TextButton", visualsScroll)
+colorModeBtn.Size = UDim2.new(0, 200, 0, 35); colorModeBtn.Position = UDim2.new(0, 10, 0, 240); colorModeBtn.Text = "Цвет ESP: Командный"; colorModeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); colorModeBtn.TextColor3 = Color3.new(1,1,1); colorModeBtn.Font = Enum.Font.SourceSansBold; colorModeBtn.ZIndex = 8; Instance.new("UICorner", colorModeBtn)
 
 local tracerModeBtn = Instance.new("TextButton", visualsScroll)
-tracerModeBtn.Size = UDim2.new(0, 200, 0, 35); tracerModeBtn.Position = UDim2.new(0, 10, 0, 265); tracerModeBtn.Text = "НИЗ ЭКРАНА"; tracerModeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); tracerModeBtn.TextColor3 = Color3.new(1,1,1); tracerModeBtn.Font = Enum.Font.SourceSansBold; tracerModeBtn.ZIndex = 8; Instance.new("UICorner", tracerModeBtn)
+tracerModeBtn.Size = UDim2.new(0, 200, 0, 35); tracerModeBtn.Position = UDim2.new(0, 10, 0, 280); tracerModeBtn.Text = "Линии: НИЗ ЭКРАНА"; tracerModeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); tracerModeBtn.TextColor3 = Color3.new(1,1,1); tracerModeBtn.Font = Enum.Font.SourceSansBold; tracerModeBtn.ZIndex = 8; Instance.new("UICorner", tracerModeBtn)
 
 -- Логика кнопок визуалов
 espToggleBtn.MouseButton1Click:Connect(function()
@@ -147,47 +135,14 @@ espToggleBtn.MouseButton1Click:Connect(function()
     espToggleBtn.Text = ESP_Enabled and "ESP: ON" or "ESP: OFF"
     espToggleBtn.BackgroundColor3 = ESP_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
     espSubMenu.Visible = ESP_Enabled 
-    
-    if not ESP_Enabled then
-        for _, obj in pairs(espObjects) do 
-            obj.Box.Visible = false; obj.Tracer.Visible = false; obj.Text.Visible = false
-        end
-    end
+    if not ESP_Enabled then for _, obj in pairs(espObjects) do obj.Box.Visible = false; obj.Tracer.Visible = false; obj.Text.Visible = false end end
 end)
-
-nameToggleBtn.MouseButton1Click:Connect(function()
-    Show_Names = not Show_Names
-    nameToggleBtn.Text = Show_Names and "Никнеймы: Вкл" or "Никнеймы: Выкл"
-    nameToggleBtn.BackgroundColor3 = Show_Names and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
-end)
-
-distToggleBtn.MouseButton1Click:Connect(function()
-    Show_Dist = not Show_Dist
-    distToggleBtn.Text = Show_Dist and "Дистанция: Вкл" or "Дистанция: Выкл"
-    distToggleBtn.BackgroundColor3 = Show_Dist and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
-end)
-
-chamsBtn.MouseButton1Click:Connect(function()
-    Chams_Enabled = not Chams_Enabled
-    chamsBtn.Text = Chams_Enabled and "Chams: ON" or "Chams: OFF"
-    chamsBtn.BackgroundColor3 = Chams_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
-end)
-
-rgbChamsBtn.MouseButton1Click:Connect(function()
-    RGB_Chams = not RGB_Chams
-    rgbChamsBtn.Text = RGB_Chams and "RGB Chams: ON" or "RGB Chams: OFF"
-    rgbChamsBtn.BackgroundColor3 = RGB_Chams and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
-end)
-
-skelBtn.MouseButton1Click:Connect(function()
-    Skeleton_ESP = not Skeleton_ESP
-    skelBtn.Text = Skeleton_ESP and "Скелетоны: Вкл" or "Скелетоны: Выкл"
-    skelBtn.BackgroundColor3 = Skeleton_ESP and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
-    if not Skeleton_ESP then
-        for _, pLines in pairs(skeletons) do for _, line in pairs(pLines) do line.Visible = false end end
-    end
-end)
-
+nameToggleBtn.MouseButton1Click:Connect(function() Show_Names = not Show_Names; nameToggleBtn.Text = Show_Names and "Никнеймы: Вкл" or "Никнеймы: Выкл"; nameToggleBtn.BackgroundColor3 = Show_Names and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50) end)
+distToggleBtn.MouseButton1Click:Connect(function() Show_Dist = not Show_Dist; distToggleBtn.Text = Show_Dist and "Дистанция: Вкл" or "Дистанция: Выкл"; distToggleBtn.BackgroundColor3 = Show_Dist and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50) end)
+chamsBtn.MouseButton1Click:Connect(function() Chams_Enabled = not Chams_Enabled; chamsBtn.Text = Chams_Enabled and "Chams: ON" or "Chams: OFF"; chamsBtn.BackgroundColor3 = Chams_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45) end)
+rgbChamsBtn.MouseButton1Click:Connect(function() RGB_Chams = not RGB_Chams; rgbChamsBtn.Text = RGB_Chams and "RGB Chams: ON" or "RGB Chams: OFF"; rgbChamsBtn.BackgroundColor3 = RGB_Chams and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45) end)
+skelBtn.MouseButton1Click:Connect(function() Skeleton_ESP = not Skeleton_ESP; skelBtn.Text = Skeleton_ESP and "Скелетоны: Вкл" or "Скелетоны: Выкл"; skelBtn.BackgroundColor3 = Skeleton_ESP and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45); if not Skeleton_ESP then for _, pLines in pairs(skeletons) do for _, line in pairs(pLines) do line.Visible = false end end end end)
+mm2Btn.MouseButton1Click:Connect(function() MM2_Revealer = not MM2_Revealer; mm2Btn.Text = MM2_Revealer and "MM2 Роли: Вкл" or "MM2 Роли: Выкл"; mm2Btn.BackgroundColor3 = MM2_Revealer and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45) end)
 colorModeBtn.MouseButton1Click:Connect(function()
     if Tracer_Color_Mode == "Team" then Tracer_Color_Mode = "Red"; colorModeBtn.Text = "Цвет ESP: Красный"
     elseif Tracer_Color_Mode == "Red" then Tracer_Color_Mode = "Green"; colorModeBtn.Text = "Цвет ESP: Зеленый"
@@ -195,90 +150,79 @@ colorModeBtn.MouseButton1Click:Connect(function()
     elseif Tracer_Color_Mode == "Blue" then Tracer_Color_Mode = "Rainbow"; colorModeBtn.Text = "Цвет ESP: Радуга"
     else Tracer_Color_Mode = "Team"; colorModeBtn.Text = "Цвет ESP: Командный" end
 end)
-
 tracerModeBtn.MouseButton1Click:Connect(function()
-    if Tracer_Mode == "Bottom" then Tracer_Mode = "Center"; tracerModeBtn.Text = "ЦЕНТР ЭКРАНА"
-    elseif Tracer_Mode == "Center" then Tracer_Mode = "Top"; tracerModeBtn.Text = "ВВЕРХ ЭКРАНА"
-    else Tracer_Mode = "Bottom"; tracerModeBtn.Text = "НИЗ ЭКРАНА" end
+    if Tracer_Mode == "Bottom" then Tracer_Mode = "Center"; tracerModeBtn.Text = "Линии: ЦЕНТР ЭКРАНА"
+    elseif Tracer_Mode == "Center" then Tracer_Mode = "Top"; tracerModeBtn.Text = "Линии: ВВЕРХ ЭКРАНА"
+    else Tracer_Mode = "Bottom"; tracerModeBtn.Text = "Линии: НИЗ ЭКРАНА" end
 end)
 
-
--- === СКРОЛЛ-СПИСОК ДЛЯ PLAYER ===
+-- === СКРОЛЛ PLAYER ===
 local playerScroll = Instance.new("ScrollingFrame", playerPage)
-playerScroll.Size = UDim2.new(0, 290, 0, 250); playerScroll.Position = UDim2.new(0, 0, 0, 15); playerScroll.BackgroundTransparency = 1; playerScroll.ScrollBarThickness = 5; playerScroll.CanvasSize = UDim2.new(0, 0, 0, 380); playerScroll.ZIndex = 7
+playerScroll.Size = UDim2.new(0, 290, 0, 250); playerScroll.Position = UDim2.new(0, 0, 0, 15); playerScroll.BackgroundTransparency = 1; playerScroll.ScrollBarThickness = 5; playerScroll.CanvasSize = UDim2.new(0, 0, 0, 480); playerScroll.ZIndex = 7
+
+-- Кнопка Blade Ball Auto-Parry
+local parryBtn = Instance.new("TextButton", playerScroll)
+parryBtn.Size = UDim2.new(0, 200, 0, 40); parryBtn.Position = UDim2.new(0, 10, 0, 0); parryBtn.Text = "Blade Ball Авто-Блок: OFF"; parryBtn.BackgroundColor3 = Color3.fromRGB(70, 30, 90); parryBtn.TextColor3 = Color3.new(1,1,1); parryBtn.Font = Enum.Font.SourceSansBold; parryBtn.ZIndex = 8; Instance.new("UICorner", parryBtn)
+parryBtn.MouseButton1Click:Connect(function()
+    AutoParry_Enabled = not AutoParry_Enabled
+    parryBtn.Text = AutoParry_Enabled and "Blade Ball Авто-Блок: ON" or "Blade Ball Авто-Блок: OFF"
+    parryBtn.BackgroundColor3 = AutoParry_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(70, 30, 90)
+end)
+
+-- Кнопка Aimbot
+local aimBtn = Instance.new("TextButton", playerScroll)
+aimBtn.Size = UDim2.new(0, 200, 0, 40); aimBtn.Position = UDim2.new(0, 10, 0, 45); aimBtn.Text = "Aimbot (Доводка): Выкл"; aimBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); aimBtn.TextColor3 = Color3.new(1,1,1); aimBtn.Font = Enum.Font.SourceSansBold; aimBtn.ZIndex = 8; Instance.new("UICorner", aimBtn)
+aimBtn.MouseButton1Click:Connect(function()
+    Aimbot_Enabled = not Aimbot_Enabled
+    aimBtn.Text = Aimbot_Enabled and "Aimbot (Доводка): Вкл" or "Aimbot (Доводка): Выкл"
+    aimBtn.BackgroundColor3 = Aimbot_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
+end)
+
+-- Кнопка Infinite Jump
+local infJumpBtn = Instance.new("TextButton", playerScroll)
+infJumpBtn.Size = UDim2.new(0, 200, 0, 40); infJumpBtn.Position = UDim2.new(0, 10, 0, 90); infJumpBtn.Text = "Бесконечный Прыжок: Выкл"; infJumpBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); infJumpBtn.TextColor3 = Color3.new(1,1,1); infJumpBtn.Font = Enum.Font.SourceSansBold; infJumpBtn.ZIndex = 8; Instance.new("UICorner", infJumpBtn)
+infJumpBtn.MouseButton1Click:Connect(function()
+    InfJump_Enabled = not InfJump_Enabled
+    infJumpBtn.Text = InfJump_Enabled and "Бесконечный Прыжок: Вкл" or "Бесконечный Прыжок: Выкл"
+    infJumpBtn.BackgroundColor3 = InfJump_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
+end)
 
 local speedBtn = Instance.new("TextButton", playerScroll)
-speedBtn.Size = UDim2.new(0, 200, 0, 40); speedBtn.Position = UDim2.new(0, 10, 0, 0); speedBtn.Text = "Быстрый бег: Выкл (16)"; speedBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); speedBtn.TextColor3 = Color3.new(1,1,1); speedBtn.Font = Enum.Font.SourceSansBold; speedBtn.ZIndex = 8; Instance.new("UICorner", speedBtn)
-
-speedBtn.MouseButton1Click:Connect(function()
-    Custom_Speed = (Custom_Speed == 16) and 50 or 16
-    speedBtn.Text = Custom_Speed == 50 and "Быстрый бег: Вкл (50)" or "Быстрый бег: Выкл (16)"
-    speedBtn.BackgroundColor3 = Custom_Speed == 50 and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
-end)
+speedBtn.Size = UDim2.new(0, 200, 0, 40); speedBtn.Position = UDim2.new(0, 10, 0, 135); speedBtn.Text = "Быстрый бег: Выкл"; speedBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); speedBtn.TextColor3 = Color3.new(1,1,1); speedBtn.Font = Enum.Font.SourceSansBold; speedBtn.ZIndex = 8; Instance.new("UICorner", speedBtn)
+speedBtn.MouseButton1Click:Connect(function() Speed_Enabled = not Speed_Enabled; speedBtn.Text = Speed_Enabled and "Быстрый бег: Вкл (50)" or "Быстрый бег: Выкл"; speedBtn.BackgroundColor3 = Speed_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45) end)
 
 local jumpBtn = Instance.new("TextButton", playerScroll)
-jumpBtn.Size = UDim2.new(0, 200, 0, 40); jumpBtn.Position = UDim2.new(0, 10, 0, 50); jumpBtn.Text = "Высокий прыжок: Выкл"; jumpBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); jumpBtn.TextColor3 = Color3.new(1,1,1); jumpBtn.Font = Enum.Font.SourceSansBold; jumpBtn.ZIndex = 8; Instance.new("UICorner", jumpBtn)
-
-jumpBtn.MouseButton1Click:Connect(function()
-    Custom_Jump = (Custom_Jump == 50) and 120 or 50
-    jumpBtn.Text = Custom_Jump == 120 and "Высокий прыжок: Вкл (120)" or "Высокий прыжок: Выкл"
-    jumpBtn.BackgroundColor3 = Custom_Jump == 120 and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
-end)
+jumpBtn.Size = UDim2.new(0, 200, 0, 40); jumpBtn.Position = UDim2.new(0, 10, 0, 180); jumpBtn.Text = "Высокий прыжок: Выкл"; jumpBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); jumpBtn.TextColor3 = Color3.new(1,1,1); jumpBtn.Font = Enum.Font.SourceSansBold; jumpBtn.ZIndex = 8; Instance.new("UICorner", jumpBtn)
+jumpBtn.MouseButton1Click:Connect(function() Jump_Enabled = not Jump_Enabled; jumpBtn.Text = Jump_Enabled and "Высокий прыжок: Вкл (120)" or "Высокий прыжок: Выкл"; jumpBtn.BackgroundColor3 = Jump_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45) end)
 
 local hitboxBtn = Instance.new("TextButton", playerScroll)
-hitboxBtn.Size = UDim2.new(0, 200, 0, 40); hitboxBtn.Position = UDim2.new(0, 10, 0, 100); hitboxBtn.Text = "Hitbox: OFF"; hitboxBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); hitboxBtn.TextColor3 = Color3.new(1,1,1); hitboxBtn.Font = Enum.Font.SourceSansBold; hitboxBtn.ZIndex = 8; Instance.new("UICorner", hitboxBtn)
-
-hitboxBtn.MouseButton1Click:Connect(function()
-    Hitbox_Enabled = not Hitbox_Enabled
-    hitboxBtn.Text = Hitbox_Enabled and "Hitbox: ON" or "Hitbox: OFF"
-    hitboxBtn.BackgroundColor3 = Hitbox_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
-end)
+hitboxBtn.Size = UDim2.new(0, 200, 0, 40); hitboxBtn.Position = UDim2.new(0, 10, 0, 225); hitboxBtn.Text = "Hitbox: OFF"; hitboxBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); hitboxBtn.TextColor3 = Color3.new(1,1,1); hitboxBtn.Font = Enum.Font.SourceSansBold; hitboxBtn.ZIndex = 8; Instance.new("UICorner", hitboxBtn)
+hitboxBtn.MouseButton1Click:Connect(function() Hitbox_Enabled = not Hitbox_Enabled; hitboxBtn.Text = Hitbox_Enabled and "Hitbox: ON" or "Hitbox: OFF"; hitboxBtn.BackgroundColor3 = Hitbox_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45) end)
 
 local noclipBtn = Instance.new("TextButton", playerScroll)
-noclipBtn.Size = UDim2.new(0, 200, 0, 40); noclipBtn.Position = UDim2.new(0, 10, 0, 150); noclipBtn.Text = "Ноклип: Выкл"; noclipBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); noclipBtn.TextColor3 = Color3.new(1,1,1); noclipBtn.Font = Enum.Font.SourceSansBold; noclipBtn.ZIndex = 8; Instance.new("UICorner", noclipBtn)
-
-noclipBtn.MouseButton1Click:Connect(function()
-    Noclip_Enabled = not Noclip_Enabled
-    noclipBtn.Text = Noclip_Enabled and "Ноклип: Вкл" or "Ноклип: Выкл"
-    noclipBtn.BackgroundColor3 = Noclip_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
-end)
+noclipBtn.Size = UDim2.new(0, 200, 0, 40); noclipBtn.Position = UDim2.new(0, 10, 0, 270); noclipBtn.Text = "Ноклип: Выкл"; noclipBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); noclipBtn.TextColor3 = Color3.new(1,1,1); noclipBtn.Font = Enum.Font.SourceSansBold; noclipBtn.ZIndex = 8; Instance.new("UICorner", noclipBtn)
+noclipBtn.MouseButton1Click:Connect(function() Noclip_Enabled = not Noclip_Enabled; noclipBtn.Text = Noclip_Enabled and "Ноклип: Вкл" or "Ноклип: Выкл"; noclipBtn.BackgroundColor3 = Noclip_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45) end)
 
 local flyBtn = Instance.new("TextButton", playerScroll)
-flyBtn.Size = UDim2.new(0, 200, 0, 40); flyBtn.Position = UDim2.new(0, 10, 0, 200); flyBtn.Text = "Полет: Выкл"; flyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); flyBtn.TextColor3 = Color3.new(1,1,1); flyBtn.Font = Enum.Font.SourceSansBold; flyBtn.ZIndex = 8; Instance.new("UICorner", flyBtn)
-
-flyBtn.MouseButton1Click:Connect(function()
-    Flying = not Flying
-    flyBtn.Text = Flying and "Полет: Вкл" or "Полет: Выкл"
-    flyBtn.BackgroundColor3 = Flying and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
-end)
+flyBtn.Size = UDim2.new(0, 200, 0, 40); flyBtn.Position = UDim2.new(0, 10, 0, 315); flyBtn.Text = "Полет: Выкл"; flyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); flyBtn.TextColor3 = Color3.new(1,1,1); flyBtn.Font = Enum.Font.SourceSansBold; flyBtn.ZIndex = 8; Instance.new("UICorner", flyBtn)
+flyBtn.MouseButton1Click:Connect(function() Flying = not Flying; flyBtn.Text = Flying and "Полет: Вкл" or "Полет: Выкл"; flyBtn.BackgroundColor3 = Flying and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45) end)
 
 local spinBtn = Instance.new("TextButton", playerScroll)
-spinBtn.Size = UDim2.new(0, 200, 0, 40); spinBtn.Position = UDim2.new(0, 10, 0, 250); spinBtn.Text = "Крутилка (Spin): Выкл"; spinBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); spinBtn.TextColor3 = Color3.new(1,1,1); spinBtn.Font = Enum.Font.SourceSansBold; spinBtn.ZIndex = 8; Instance.new("UICorner", spinBtn)
-
-spinBtn.MouseButton1Click:Connect(function()
-    SpinBot_Enabled = not SpinBot_Enabled
-    spinBtn.Text = SpinBot_Enabled and "Крутилка: Вкл" or "Крутилка: Выкл"
-    spinBtn.BackgroundColor3 = SpinBot_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45)
-end)
+spinBtn.Size = UDim2.new(0, 200, 0, 40); spinBtn.Position = UDim2.new(0, 10, 0, 360); spinBtn.Text = "Крутилка (Spin): Выкл"; spinBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45); spinBtn.TextColor3 = Color3.new(1,1,1); spinBtn.Font = Enum.Font.SourceSansBold; spinBtn.ZIndex = 8; Instance.new("UICorner", spinBtn)
+spinBtn.MouseButton1Click:Connect(function() SpinBot_Enabled = not SpinBot_Enabled; spinBtn.Text = SpinBot_Enabled and "Крутилка: Вкл" or "Крутилка: Выкл"; spinBtn.BackgroundColor3 = SpinBot_Enabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(45, 45, 45) end)
 
 local tpToolBtn = Instance.new("TextButton", playerScroll)
-tpToolBtn.Size = UDim2.new(0, 200, 0, 40); tpToolBtn.Position = UDim2.new(0, 10, 0, 300); tpToolBtn.Text = "Получить ТП Мышку"; tpToolBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 90); tpToolBtn.TextColor3 = Color3.new(1,1,1); tpToolBtn.Font = Enum.Font.SourceSansBold; tpToolBtn.ZIndex = 8; Instance.new("UICorner", tpToolBtn)
-
+tpToolBtn.Size = UDim2.new(0, 200, 0, 40); tpToolBtn.Position = UDim2.new(0, 10, 0, 405); tpToolBtn.Text = "Получить ТП Мышку"; tpToolBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 90); tpToolBtn.TextColor3 = Color3.new(1,1,1); tpToolBtn.Font = Enum.Font.SourceSansBold; tpToolBtn.ZIndex = 8; Instance.new("UICorner", tpToolBtn)
 tpToolBtn.MouseButton1Click:Connect(function()
-    local tool = Instance.new("Tool")
-    tool.Name = "Click Teleport"
-    tool.RequiresHandle = false
+    local tool = Instance.new("Tool"); tool.Name = "Click Teleport"; tool.RequiresHandle = false
     tool.Activated:Connect(function()
         local mouse = LocalPlayer:GetMouse()
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and mouse.Hit then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0, 3, 0))
-        end
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and mouse.Hit then LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0, 3, 0)) end
     end)
     tool.Parent = LocalPlayer.Backpack
 end)
 
-
--- === КОНТЕНТ ВКЛАДКИ TELEPORTS ===
+-- === СКРОЛЛ TELEPORTS ===
 local scrollList = Instance.new("ScrollingFrame", teleportsPage)
 scrollList.Size = UDim2.new(0, 270, 0, 240); scrollList.Position = UDim2.new(0, 10, 0, 20); scrollList.BackgroundColor3 = Color3.fromRGB(25, 25, 25); scrollList.CanvasSize = UDim2.new(0, 0, 0, 0); scrollList.ScrollBarThickness = 5; scrollList.ZIndex = 8; Instance.new("UICorner", scrollList)
 
@@ -291,11 +235,7 @@ task.spawn(function()
                 if p ~= LocalPlayer then
                     local pBtn = Instance.new("TextButton", scrollList)
                     pBtn.Size = UDim2.new(1, -15, 0, 35); pBtn.Position = UDim2.new(0, 5, 0, count * 40); pBtn.Text = p.Name; pBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40); pBtn.TextColor3 = Color3.new(1,1,1); pBtn.Font = Enum.Font.SourceSansBold; pBtn.ZIndex = 9; Instance.new("UICorner", pBtn)
-                    pBtn.MouseButton1Click:Connect(function()
-                        if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                            LocalPlayer.Character.HumanoidRootPart.CFrame = p.Character.HumanoidRootPart.CFrame
-                        end
-                    end)
+                    pBtn.MouseButton1Click:Connect(function() if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then LocalPlayer.Character.HumanoidRootPart.CFrame = p.Character.HumanoidRootPart.CFrame end end)
                     count = count + 1
                 end
             end
@@ -304,75 +244,103 @@ task.spawn(function()
     end
 end)
 
+-- Бесконечный прыжок ловит нажатия
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if InfJump_Enabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end
+end)
 
--- === МЕХАНИКА И ЯДРО ESP ===
+-- Функция поиска ближайшего врага для Аимбота
+local function getClosestPlayer()
+    local closest, maxDist = nil, math.huge
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
+            local pos, onScreen = Camera:WorldToViewportPoint(p.Character.HumanoidRootPart.Position)
+            if onScreen then
+                local dist = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
+                if dist < maxDist then maxDist = dist; closest = p end
+            end
+        end
+    end
+    return closest
+end
+
+-- Вспомогательная функция определения ролей в MM2
+local function getMM2Role(player)
+    if not MM2_Revealer then return nil end
+    local backpack = player:FindFirstChild("Backpack")
+    local char = player.Character
+    if (backpack and backpack:FindFirstChild("Knife")) or (char and char:FindFirstChild("Knife")) then return "Murder" end
+    if (backpack and backpack:FindFirstChild("Gun")) or (char and char:FindFirstChild("Gun")) then return "Sheriff" end
+    return nil
+end
+
+-- Инициализация Drawing ESP
 local function createESPItems()
     local box = Drawing.new("Square"); box.Visible = false; box.Filled = false; box.Thickness = 2
     local tracer = Drawing.new("Line"); tracer.Visible = false; tracer.Thickness = 1.5
     local text = Drawing.new("Text"); text.Visible = false; text.Size = 15; text.Color = Color3.new(1,1,1); text.Center = true; text.Outline = true
-
     return {Box = box, Tracer = tracer, Text = text}
 end
-
-local function removeESPItems(player)
-    if espObjects[player] then
-        espObjects[player].Box:Remove(); espObjects[player].Tracer:Remove(); espObjects[player].Text:Remove()
-        espObjects[player] = nil
-    end
-    if skeletons[player] then
-        for _, l in pairs(skeletons[player]) do l:Remove() end
-        skeletons[player] = nil
-    end
-end
-
 for _, player in pairs(Players:GetPlayers()) do if player ~= LocalPlayer then espObjects[player] = createESPItems() end end
 Players.PlayerAdded:Connect(function(player) espObjects[player] = createESPItems() end)
-Players.PlayerRemoving:Connect(function(player) removeESPItems(player) end)
+Players.PlayerRemoving:Connect(function(player) 
+    if espObjects[player] then espObjects[player].Box:Remove(); espObjects[player].Tracer:Remove(); espObjects[player].Text:Remove(); espObjects[player] = nil end
+end)
 
-
--- === ЦИКЛ ОБНОВЛЕНИЯ КАДРОВ (RenderStepped) ===
+-- === ОСНОВНОЙ ЦИКЛ ОБНОВЛЕНИЯ ===
 RunService.RenderStepped:Connect(function()
-    watermark.Visible = true 
-    
-    -- Плавная генерация цвета Радуги
     currentRgbColor = Color3.fromHSV(tick() % 5 / 5, 1, 1)
 
     -- Скорость и прыжки
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         local hum = LocalPlayer.Character.Humanoid
-        hum.WalkSpeed = Custom_Speed
-        if hum.UseJumpPower then hum.JumpPower = Custom_Jump else hum.JumpHeight = Custom_Jump / 3 end
+        hum.WalkSpeed = Speed_Enabled and Cheat_Speed or Original_Speed
+        if hum.UseJumpPower then hum.JumpPower = Jump_Enabled and Cheat_Jump or Original_Jump else hum.JumpHeight = Jump_Enabled and (Cheat_Jump / 3) or Original_Jump end
     end
 
-    -- Ноклип
-    if Noclip_Enabled and LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then part.CanCollide = false end
-        end
-    end
-
-    -- Крутилка (SpinBot)
-    if SpinBot_Enabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(35), 0)
-    end
-
-    -- Полёт (Fly)
+    -- Ноклип, Спинбот, Полет
+    if Noclip_Enabled and LocalPlayer.Character then for _, part in pairs(LocalPlayer.Character:GetDescendants()) do if part:IsA("BasePart") then part.CanCollide = false end end end
+    if SpinBot_Enabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(35), 0) end
     if Flying and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        local hrp = LocalPlayer.Character.HumanoidRootPart
-        local hum = LocalPlayer.Character.Humanoid
-        hrp.Velocity = Vector3.new(0, 0.1, 0)
-        if hum.MoveDirection.Magnitude > 0 then
-            hrp.Velocity = hum.MoveDirection * FlySpeed
+        local hrp = LocalPlayer.Character.HumanoidRootPart local hum = LocalPlayer.Character.Humanoid hrp.Velocity = Vector3.new(0, 0.1, 0)
+        if hum.MoveDirection.Magnitude > 0 then hrp.Velocity = hum.MoveDirection * FlySpeed end
+    end
+
+    -- Аимбот доводка камеры
+    if Aimbot_Enabled then
+        local target = getClosestPlayer()
+        if target and target.Character and target.Character:FindFirstChild("Head") then
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Character.Head.Position)
         end
     end
 
-    -- Положение трейсеров
-    local startPoint
-    if Tracer_Mode == "Bottom" then startPoint = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-    elseif Tracer_Mode == "Center" then startPoint = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    -- Скрипт Blade Ball Auto-Parry (Умный триггер на мяч)
+    if AutoParry_Enabled then
+        local balls = workspace:FindFirstChild("Balls") or workspace:FindFirstChild("BallFolder")
+        if balls then
+            for _, ball in pairs(balls:GetChildren()) do
+                if ball:IsA("BasePart") and ball:GetAttribute("Target") == LocalPlayer.Name then
+                    local distance = (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and (ball.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude) or 999
+                    local speed = ball.Velocity.Magnitude
+                    -- Динамическая проверка расстояния на отбивание мяча
+                    if distance < (speed * 0.45) or distance < 15 then
+                        local rem = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
+                        local parryRemote = rem and (rem:FindFirstChild("Parry") or rem:FindFirstChild("ParryAttempt"))
+                        if parryRemote then parryRemote:FireServer() end
+                    end
+                end
+            end
+        end
+    end
+
+    -- Трейсеры старт
+    local startPoint = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+    if Tracer_Mode == "Center" then startPoint = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     elseif Tracer_Mode == "Top" then startPoint = Vector2.new(Camera.ViewportSize.X / 2, 0) end
 
-    -- Большой цикл по всем игрокам
+    -- Отрисовка ESP & Чамсов & MM2 Ревилера
     for player, obj in pairs(espObjects) do
         local character = player.Character
         if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") and character.Humanoid.Health > 0 then
@@ -380,67 +348,29 @@ RunService.RenderStepped:Connect(function()
             local vector, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
 
             -- Хитбоксы
-            if Hitbox_Enabled then
-                rootPart.Size = Vector3.new(Hitbox_Size, Hitbox_Size, Hitbox_Size)
-                rootPart.Transparency = 0.5
-                rootPart.BrickColor = BrickColor.new("Really red")
-                rootPart.CanCollide = false
-            else
-                rootPart.Size = Vector3.new(2, 2, 1)
-                rootPart.Transparency = 1
-            end
+            if Hitbox_Enabled then rootPart.Size = Vector3.new(Hitbox_Size, Hitbox_Size, Hitbox_Size); rootPart.Transparency = 0.5; rootPart.BrickColor = BrickColor.new("Really red"); rootPart.CanCollide = false else rootPart.Size = Vector3.new(2, 2, 1); rootPart.Transparency = 1 end
+
+            -- Проверка ролей MM2
+            local mm2Role = getMM2Role(player)
 
             -- Чамсы
             if Chams_Enabled then
-                if not character:FindFirstChild("HubHighlight") then
-                    local hl = Instance.new("Highlight", character)
-                    hl.Name = "HubHighlight"; hl.FillTransparency = 0.4
-                end
-                character.HubHighlight.FillColor = RGB_Chams and currentRgbColor or Color3.fromRGB(255, 0, 0)
+                if not character:FindFirstChild("HubHighlight") then Instance.new("Highlight", character).Name = "HubHighlight" end
+                local cHighlight = character.HubHighlight
+                cHighlight.FillTransparency = 0.4
+                if mm2Role == "Murder" then cHighlight.FillColor = Color3.fromRGB(255, 0, 0)
+                elseif mm2Role == "Sheriff" then cHighlight.FillColor = Color3.fromRGB(0, 0, 255)
+                else cHighlight.FillColor = RGB_Chams and currentRgbColor or Color3.fromRGB(255, 255, 255) end
             else
                 if character:FindFirstChild("HubHighlight") then character.HubHighlight:Destroy() end
             end
 
-            -- Скелетоны
-            if Skeleton_ESP and onScreen then
-                if not skeletons[player] then
-                    skeletons[player] = {
-                        Spine = Drawing.new("Line"), LeftArm = Drawing.new("Line"), 
-                        RightArm = Drawing.new("Line"), LeftLeg = Drawing.new("Line"), RightLeg = Drawing.new("Line")
-                    }
-                    for _, l in pairs(skeletons[player]) do l.Thickness = 2 end
-                end
-                
-                local sk = skeletons[player]
-                local head = character:FindFirstChild("Head")
-                local torso = character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
-                local lArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftUpperArm")
-                local rArm = character:FindFirstChild("Right Arm") or character:FindFirstChild("RightUpperArm")
-                local lLeg = character:FindFirstChild("Left Leg") or character:FindFirstChild("LeftLowerLeg")
-                local rLeg = character:FindFirstChild("Right Leg") or character:FindFirstChild("RightLowerLeg")
-                
-                local skColor = RGB_Chams and currentRgbColor or Color3.fromRGB(255, 255, 255)
-                for _, l in pairs(sk) do l.Color = skColor end
-
-                if head and torso then
-                    local vHead, _ = Camera:WorldToViewportPoint(head.Position)
-                    local vTorso, _ = Camera:WorldToViewportPoint(torso.Position)
-                    sk.Spine.From = Vector2.new(vHead.X, vHead.Y); sk.Spine.To = Vector2.new(vTorso.X, vTorso.Y); sk.Spine.Visible = true
-                    
-                    if lArm then local vA, _ = Camera:WorldToViewportPoint(lArm.Position); sk.LeftArm.From = Vector2.new(vTorso.X, vTorso.Y); sk.LeftArm.To = Vector2.new(vA.X, vA.Y); sk.LeftArm.Visible = true else sk.LeftArm.Visible = false end
-                    if rArm then local vA, _ = Camera:WorldToViewportPoint(rArm.Position); sk.RightArm.From = Vector2.new(vTorso.X, vTorso.Y); sk.RightArm.To = Vector2.new(vA.X, vA.Y); sk.RightArm.Visible = true else sk.RightArm.Visible = false end
-                    if lLeg then local vL, _ = Camera:WorldToViewportPoint(lLeg.Position); sk.LeftLeg.From = Vector2.new(vTorso.X, vTorso.Y); sk.LeftLeg.To = Vector2.new(vL.X, vL.Y); sk.LeftLeg.Visible = true else sk.LeftLeg.Visible = false end
-                    if rLeg then local vL, _ = Camera:WorldToViewportPoint(rLeg.Position); sk.RightLeg.From = Vector2.new(vTorso.X, vTorso.Y); sk.RightLeg.To = Vector2.new(vL.X, vL.Y); sk.RightLeg.Visible = true else sk.RightLeg.Visible = false end
-                end
-            elseif skeletons[player] then
-                for _, l in pairs(skeletons[player]) do l.Visible = false end
-            end
-
-            -- Отрисовка ESP (Boxes + Lines + Text)
+            -- Рисование ESP
             if ESP_Enabled and onScreen then
-                -- Выбор цвета линий
                 local displayColor = Color3.fromRGB(255, 255, 255)
-                if Tracer_Color_Mode == "Team" and player.Team then displayColor = player.TeamColor.Color
+                if mm2Role == "Murder" then displayColor = Color3.fromRGB(255, 30, 30)
+                elseif mm2Role == "Sheriff" then displayColor = Color3.fromRGB(30, 30, 255)
+                elseif Tracer_Color_Mode == "Team" and player.Team then displayColor = player.TeamColor.Color
                 elseif Tracer_Color_Mode == "Red" then displayColor = Color3.fromRGB(255, 50, 50)
                 elseif Tracer_Color_Mode == "Green" then displayColor = Color3.fromRGB(50, 255, 50)
                 elseif Tracer_Color_Mode == "Blue" then displayColor = Color3.fromRGB(50, 50, 255)
@@ -455,14 +385,12 @@ RunService.RenderStepped:Connect(function()
                     obj.Box.Color = displayColor; obj.Box.Size = Vector2.new(scale * 1.5, scale * 2.5); obj.Box.Position = Vector2.new(vector.X - obj.Box.Size.X / 2, vector.Y - obj.Box.Size.Y / 2); obj.Box.Visible = true
                     obj.Tracer.Color = displayColor; obj.Tracer.From = startPoint; obj.Tracer.To = Vector2.new(vector.X, vector.Y + (obj.Box.Size.Y / 2)); obj.Tracer.Visible = true
                     
-                    if Show_Names or Show_Dist then
-                        local textBuffer = ""
-                        if Show_Names then textBuffer = textBuffer .. player.Name end
-                        if Show_Dist then textBuffer = textBuffer .. " [" .. math.floor(dist) .. "m]" end
-                        obj.Text.Text = textBuffer; obj.Text.Position = Vector2.new(vector.X, vector.Y - (obj.Box.Size.Y / 2) - 20); obj.Text.Visible = true
-                    else
-                        obj.Text.Visible = false
-                    end
+                    local textBuffer = ""
+                    if Show_Names then textBuffer = textBuffer .. player.Name end
+                    if mm2Role then textBuffer = textBuffer .. " [" .. mm2Role .. "]" end
+                    if Show_Dist then textBuffer = textBuffer .. " [" .. math.floor(dist) .. "m]" end
+                    
+                    obj.Text.Text = textBuffer; obj.Text.Position = Vector2.new(vector.X, vector.Y - (obj.Box.Size.Y / 2) - 20); obj.Text.Color = displayColor; obj.Text.Visible = (Show_Names or Show_Dist or MM2_Revealer)
                 else
                     obj.Box.Visible = false; obj.Tracer.Visible = false; obj.Text.Visible = false
                 end
@@ -471,9 +399,8 @@ RunService.RenderStepped:Connect(function()
             end
         else
             obj.Box.Visible = false; obj.Tracer.Visible = false; obj.Text.Visible = false
-            if skeletons[player] then for _, l in pairs(skeletons[player]) do l.Visible = false end end
         end
     end
 end)
 
-print("c00lkidd214anzz Hub Scrolling Edition Successfully Loaded!")
+print("c00lkidd214anzz Hub Ultimate Multigame Script Loaded!")
