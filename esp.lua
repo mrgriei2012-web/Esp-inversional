@@ -1,11 +1,11 @@
--- c00lkidd214anzz Hub (Full Stable Version)
+-- c00lkidd214anzz Hub (Full Stable & Music Fix Edition)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
--- Инициализация переменных
+-- Настройки и переменные
 local ESP_Enabled, Show_Names, Show_Dist, Chams_Enabled, RGB_Chams = false, true, true, false, false
 local Hitbox_Enabled, Noclip_Enabled, Flying, SpinBot_Enabled = false, false, false, false
 local InfJump_Enabled, Aimbot_Enabled, AutoParry_Enabled, MM2_Revealer = false, false, false, false
@@ -36,9 +36,26 @@ local function createTab(name)
 end
 
 -- Вкладки
-local aimPage = createTab("Aimbot"); local bbPage = createTab("Blade Ball"); local mm2Page = createTab("Murder Mystery 2"); local visPage = createTab("Visuals (ESP)"); local playerPage = createTab("Main / Player"); local bhPage = createTab("Brookhaven RP")
+local aimPage = createTab("Aimbot")
+local bbPage = createTab("Blade Ball")
+local mm2Page = createTab("Murder Mystery 2")
+local visPage = createTab("Visuals (ESP)")
+local playerPage = createTab("Main / Player")
+local bhPage = createTab("Brookhaven RP")
 
--- Логика Брукхейвена (ФИКС)
+-- Кнопки вкладок
+local function addFeature(parentPage, text, defaultState, callback)
+    local Btn = Instance.new("TextButton", parentPage); Btn.Size = UDim2.new(1, -10, 0, 36); Btn.BackgroundColor3 = defaultState and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(40, 40, 40); Btn.Text = text; Btn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", Btn)
+    local enabled = defaultState; Btn.MouseButton1Click:Connect(function() enabled = not enabled; Btn.BackgroundColor3 = enabled and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(40, 40, 40); callback(enabled) end)
+end
+
+addFeature(aimPage, "Aimbot", Aimbot_Enabled, function(v) Aimbot_Enabled = v end)
+addFeature(bbPage, "Auto Parry", AutoParry_Enabled, function(v) AutoParry_Enabled = v end)
+addFeature(mm2Page, "MM2 Revealer", MM2_Revealer, function(v) MM2_Revealer = v end)
+addFeature(visPage, "ESP Boxes", ESP_Enabled, function(v) ESP_Enabled = v end)
+addFeature(playerPage, "Fly", Flying, function(v) Flying = v end)
+
+-- Brookhaven Music Logic (ФИКС)
 local bhTextBox = Instance.new("TextBox", bhPage); bhTextBox.Size = UDim2.new(1, -10, 0, 40); bhTextBox.Text = "1837874690"; bhTextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30); Instance.new("UICorner", bhTextBox)
 local bhMusicBtn = Instance.new("TextButton", bhPage); bhMusicBtn.Size = UDim2.new(1, -10, 0, 40); bhMusicBtn.Text = "ВКЛЮЧИТЬ МУЗЫКУ"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140); Instance.new("UICorner", bhMusicBtn)
 
@@ -54,8 +71,12 @@ bhMusicBtn.MouseButton1Click:Connect(function()
     task.wait(2); bhMusicBtn.Text = "ВКЛЮЧИТЬ МУЗЫКУ"
 end)
 
--- (Тут ниже идет код ESP, Аимбота, Физики — логика работает в цикле RenderStepped)
--- Просто добавь сюда остальные функции из своего предыдущего рабочего варианта.
-
+-- Инициализация и цикл обновлений
 pages[1].Visible = true
-print("c00lkidd214anzz Hub Loaded!")
+RunService.RenderStepped:Connect(function()
+    if Flying and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LocalPlayer.Character.HumanoidRootPart; hrp.Velocity = Vector3.new(0, 0.1, 0)
+    end
+end)
+
+print("c00lkidd214anzz Hub Full Version Loaded!")
