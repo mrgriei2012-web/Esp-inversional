@@ -1,4 +1,4 @@
--- c00lkidd214anzz Hub (Ultimate Two-Panel FE Music Edition 2026)
+-- c00lkidd214anzz Hub (Brookhaven RP Dynamic Music ID Edition)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
@@ -29,7 +29,7 @@ local Cheat_Jump = 120
 local Hitbox_Size = 5
 local FlySpeed = 50
 
--- Переменная для ID музыки (можешь менять прямо тут или в коде)
+-- Переменная для ID музыки по умолчанию
 local Brookhaven_SoundID = "1837874690" 
 
 -- Оригинальные параметры игрока
@@ -81,7 +81,7 @@ local sidebar = Instance.new("Frame", mainFrame)
 sidebar.Size = UDim2.new(0, 150, 1, -20); sidebar.Position = UDim2.new(0, 10, 0, 10); sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15); Instance.new("UICorner", sidebar)
 
 local sideScroll = Instance.new("ScrollingFrame", sidebar)
-sideScroll.Size = UDim2.new(1, -10, 1, -10); sideScroll.Position = UDim2.new(0, 5, 0, 5); sideScroll.BackgroundTransparency = 1; sideScroll.ScrollBarThickness = 2; sideScroll.CanvasSize = UDim2.new(0,0,0,300)
+sideScroll.Size = UDim2.new(1, -10, 1, -10); sideScroll.Position = UDim2.new(0, 5, 0, 5); sideScroll.BackgroundTransparency = 1; sideScroll.ScrollBarThickness = 2; sideScroll.CanvasSize = UDim2.new(0,0,0,350)
 local sideLayout = Instance.new("UIListLayout", sideScroll)
 sideLayout.Padding = UDim.new(0, 5)
 
@@ -172,26 +172,8 @@ colorModeBtn.MouseButton1Click:Connect(function()
     else Tracer_Color_Mode = "Team"; colorModeBtn.Text = "Цвет ESP: Командный" end
 end)
 
--- 5. Страница: PLAYER + FE МУЗЫКА
+-- 5. Страница: PLAYER
 local playerPage = createTab("Main / Player")
-
--- КНОПКА FE МУЗЫКИ ДЛЯ БРУКХЕЙВЕНА (ВШИТА СЮДА)
-local bhMusicBtn = Instance.new("TextButton", playerPage)
-bhMusicBtn.Size = UDim2.new(1, -10, 0, 36); bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140); bhMusicBtn.Text = "Включить FE Музыку (Brookhaven)"; bhMusicBtn.TextColor3 = Color3.new(1,1,1); bhMusicBtn.Font = Enum.Font.GothamBold; bhMusicBtn.TextSize = 12; Instance.new("UICorner", bhMusicBtn)
-bhMusicBtn.MouseButton1Click:Connect(function()
-    local networkRemote = game:GetService("ReplicatedStorage"):FindFirstChild("Network")
-    if networkRemote and networkRemote:IsA("RemoteEvent") then
-        networkRemote:FireServer("CarMusic", Brookhaven_SoundID)
-        networkRemote:FireServer("HouseMusic", Brookhaven_SoundID)
-        networkRemote:FireServer("BoomboxId", tonumber(Brookhaven_SoundID))
-        bhMusicBtn.Text = "Отправлено серверу (Включи авто/дом)!"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-        task.wait(2)
-        bhMusicBtn.Text = "Включить FE Музыку (Brookhaven)"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140)
-    else
-        bhMusicBtn.Text = "Ошибка: Сеть Brookhaven не найдена"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
-    end
-end)
-
 addFeature(playerPage, "Бесконечный Прыжок", InfJump_Enabled, function(v) InfJump_Enabled = v end)
 addFeature(playerPage, "Быстрый бег (50)", Speed_Enabled, function(v) Speed_Enabled = v end)
 addFeature(playerPage, "Высокий прыжок (120)", Jump_Enabled, function(v) Jump_Enabled = v end)
@@ -213,7 +195,77 @@ tpToolBtn.MouseButton1Click:Connect(function()
     tool.Parent = LocalPlayer.Backpack
 end)
 
--- 6. Страница: TELEPORTS
+-- 6. ВЫДЕЛЕННАЯ СТРАНИЦА: BROOKHAVEN RP (С полем ввода ID)
+local bhPage = createTab("Brookhaven RP")
+
+-- ПОЛЕ ВВОДА ДЛЯ ID ЗВУКА
+local bhTextBox = Instance.new("TextBox", bhPage)
+bhTextBox.Size = UDim2.new(1, -10, 0, 36)
+bhTextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+bhTextBox.Text = Brookhaven_SoundID
+bhTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+bhTextBox.PlaceholderText = "Введите ID Музыки здесь..."
+bhTextBox.Font = Enum.Font.Gotham
+bhTextBox.TextSize = 12
+Instance.new("UICorner", bhTextBox)
+
+-- Слушатель изменений: при вводе обновляем переменную
+bhTextBox.FocusLost:Connect(function()
+    if bhTextBox.Text ~= "" then
+        Brookhaven_SoundID = bhTextBox.Text
+    end
+end)
+
+-- КНОПКА ЗАПУСКА
+local bhMusicBtn = Instance.new("TextButton", bhPage)
+bhMusicBtn.Size = UDim2.new(1, -10, 0, 40)
+bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140)
+bhMusicBtn.Text = "Включить введенный ID"
+bhMusicBtn.TextColor3 = Color3.new(1,1,1)
+bhMusicBtn.Font = Enum.Font.GothamBold
+bhMusicBtn.TextSize = 13
+Instance.new("UICorner", bhMusicBtn)
+
+bhMusicBtn.MouseButton1Click:Connect(function()
+    -- На всякий случай забираем актуальный текст из плашки перед стартом
+    if bhTextBox.Text ~= "" then Brookhaven_SoundID = bhTextBox.Text end
+    
+    local found = false
+    for _, obj in pairs(game:GetDescendants()) do
+        if obj:IsA("RemoteEvent") then
+            if obj.Name == "Network" or obj.Name == "Net" or obj.Name == "CarEvent" or obj.Name == "DriveRemote" then
+                pcall(function()
+                    obj:FireServer("CarMusic", Brookhaven_SoundID)
+                    obj:FireServer("HouseMusic", Brookhaven_SoundID)
+                    obj:FireServer("BoomboxId", tonumber(Brookhaven_SoundID))
+                end)
+                found = true
+            end
+        end
+    end
+    
+    if found then
+        bhMusicBtn.Text = "Музыка отправлена!"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+        task.wait(2)
+        bhMusicBtn.Text = "Включить введенный ID"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140)
+    else
+        local altNet = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes") or game:GetService("ReplicatedStorage"):FindFirstChild("Modules")
+        if altNet then
+            for _, child in pairs(altNet:GetDescendants()) do
+                if child:IsA("RemoteEvent") then
+                    pcall(function() child:FireServer("CarMusic", Brookhaven_SoundID) end)
+                end
+            end
+            bhMusicBtn.Text = "Отправлено альтернативно!"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+        else
+            bhMusicBtn.Text = "Заспавни машину или дом сначала!"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+        end
+        task.wait(2)
+        bhMusicBtn.Text = "Включить введенный ID"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140)
+    end
+end)
+
+-- 7. Страница: TELEPORTS
 local tpPage = createTab("Teleports")
 local scrollList = Instance.new("Frame", tpPage)
 scrollList.Size = UDim2.new(1, -10, 1, 0); scrollList.BackgroundTransparency = 1
@@ -393,4 +445,4 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-print("c00lkidd214anzz Ultimate FE Multi-Script Loaded!")
+print("c00lkidd214anzz Hub with dynamic TextBox loaded!")
