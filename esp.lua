@@ -1,4 +1,4 @@
--- c00lkidd214anzz Hub (Ultimate Two-Panel Edition 2026)
+-- c00lkidd214anzz Hub (Ultimate Two-Panel FE Music Edition 2026)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
@@ -28,6 +28,9 @@ local Cheat_Speed = 50
 local Cheat_Jump = 120
 local Hitbox_Size = 5
 local FlySpeed = 50
+
+-- Переменная для ID музыки (можешь менять прямо тут или в коде)
+local Brookhaven_SoundID = "1837874690" 
 
 -- Оригинальные параметры игрока
 local Original_Speed = 16
@@ -87,26 +90,21 @@ local contentContainer = Instance.new("Frame", mainFrame)
 contentContainer.Size = UDim2.new(1, -180, 1, -20); contentContainer.Position = UDim2.new(0, 170, 0, 10); contentContainer.BackgroundTransparency = 1
 
 local pages = {}
-local currentTabButton = nil
 
 -- Функция создания страницы (справа) и кнопки для неё (слева)
 local function createTab(name)
-    -- Создаем скролл-страницу справа
     local pageScroll = Instance.new("ScrollingFrame", contentContainer)
     pageScroll.Size = UDim2.new(1, 0, 1, 0); pageScroll.BackgroundTransparency = 1; pageScroll.ScrollBarThickness = 6; pageScroll.Visible = false; pageScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     local pageLayout = Instance.new("UIListLayout", pageScroll)
     pageLayout.Padding = UDim.new(0, 6)
     
-    -- Авто-размер под количество функций
     pageLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         pageScroll.CanvasSize = UDim2.new(0, 0, 0, pageLayout.AbsoluteContentSize.Y + 10)
     end)
     
-    -- Создаем кнопку плашки слева
     local tabBtn = Instance.new("TextButton", sideScroll)
     tabBtn.Size = UDim2.new(1, 0, 0, 35); tabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30); tabBtn.Text = name; tabBtn.TextColor3 = Color3.fromRGB(180, 180, 180); tabBtn.Font = Enum.Font.GothamBold; tabBtn.TextSize = 12; Instance.new("UICorner", tabBtn)
     
-    -- Логика переключения страниц
     tabBtn.MouseButton1Click:Connect(function()
         for _, p in pairs(pages) do p.Visible = false end
         for _, b in pairs(sideScroll:GetChildren()) do if b:IsA("TextButton") then b.BackgroundColor3 = Color3.fromRGB(30, 30, 30); b.TextColor3 = Color3.fromRGB(180, 180, 180) end end
@@ -174,8 +172,26 @@ colorModeBtn.MouseButton1Click:Connect(function()
     else Tracer_Color_Mode = "Team"; colorModeBtn.Text = "Цвет ESP: Командный" end
 end)
 
--- 5. Страница: PLAYER
+-- 5. Страница: PLAYER + FE МУЗЫКА
 local playerPage = createTab("Main / Player")
+
+-- КНОПКА FE МУЗЫКИ ДЛЯ БРУКХЕЙВЕНА (ВШИТА СЮДА)
+local bhMusicBtn = Instance.new("TextButton", playerPage)
+bhMusicBtn.Size = UDim2.new(1, -10, 0, 36); bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140); bhMusicBtn.Text = "Включить FE Музыку (Brookhaven)"; bhMusicBtn.TextColor3 = Color3.new(1,1,1); bhMusicBtn.Font = Enum.Font.GothamBold; bhMusicBtn.TextSize = 12; Instance.new("UICorner", bhMusicBtn)
+bhMusicBtn.MouseButton1Click:Connect(function()
+    local networkRemote = game:GetService("ReplicatedStorage"):FindFirstChild("Network")
+    if networkRemote and networkRemote:IsA("RemoteEvent") then
+        networkRemote:FireServer("CarMusic", Brookhaven_SoundID)
+        networkRemote:FireServer("HouseMusic", Brookhaven_SoundID)
+        networkRemote:FireServer("BoomboxId", tonumber(Brookhaven_SoundID))
+        bhMusicBtn.Text = "Отправлено серверу (Включи авто/дом)!"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+        task.wait(2)
+        bhMusicBtn.Text = "Включить FE Музыку (Brookhaven)"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140)
+    else
+        bhMusicBtn.Text = "Ошибка: Сеть Brookhaven не найдена"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+    end
+end)
+
 addFeature(playerPage, "Бесконечный Прыжок", InfJump_Enabled, function(v) InfJump_Enabled = v end)
 addFeature(playerPage, "Быстрый бег (50)", Speed_Enabled, function(v) Speed_Enabled = v end)
 addFeature(playerPage, "Высокий прыжок (120)", Jump_Enabled, function(v) Jump_Enabled = v end)
@@ -220,12 +236,10 @@ task.spawn(function()
     end
 end)
 
--- Делаем первую страницу активной по умолчанию при запуске
+-- Настройки отображения первой страницы по умолчанию
 pages[1].Visible = true
 sideScroll:GetChildren()[2].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
 sideScroll:GetChildren()[2].TextColor3 = Color3.fromRGB(255, 255, 255)
-
--- Настройка размеров левой панели вкладок
 sideScroll.CanvasSize = UDim2.new(0, 0, 0, sideLayout.AbsoluteContentSize.Y + 10)
 
 -- === ДВИЖКИ ЛОГИКИ ХАКОВ ===
@@ -379,4 +393,4 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-print("c00lkidd214anzz Two-Panel Sidebar Hub Loaded!")
+print("c00lkidd214anzz Ultimate FE Multi-Script Loaded!")
