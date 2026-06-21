@@ -220,6 +220,38 @@ task.spawn(function()
     end
 end)
 
+-- === Вкладка: MUSIC (BROOKHAVEN) ===
+local musicPage = createTab("Music")
+
+local musicTextBox = Instance.new("TextBox", musicPage)
+musicTextBox.Size = UDim2.new(1, -10, 0, 40)
+musicTextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+musicTextBox.TextColor3 = Color3.new(1, 1, 1)
+musicTextBox.Text = "1837874690" -- Стандартный ID для теста
+musicTextBox.PlaceholderText = "Введите ID музыки"
+Instance.new("UICorner", musicTextBox)
+
+local musicBtn = Instance.new("TextButton", musicPage)
+musicBtn.Size = UDim2.new(1, -10, 0, 40)
+musicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140)
+musicBtn.Text = "PLAY MUSIC"
+musicBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", musicBtn)
+
+musicBtn.MouseButton1Click:Connect(function()
+    -- Обращаемся к событию, которое ты нашел в консоли
+    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes") and 
+                   game:GetService("ReplicatedStorage").Remotes:FindFirstChild("ClientMusic")
+    
+    if remote then
+        pcall(function()
+            remote:FireServer("Play", musicTextBox.Text)
+        end)
+    else
+        warn("Remote ClientMusic не найден по указанному пути!")
+    end
+end)
+
 -- Делаем первую страницу активной по умолчанию при запуске
 pages[1].Visible = true
 sideScroll:GetChildren()[2].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
