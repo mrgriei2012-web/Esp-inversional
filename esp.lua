@@ -220,35 +220,21 @@ task.spawn(function()
     end
 end)
 
--- === Вкладка: MUSIC (BROOKHAVEN) ===
-local musicPage = createTab("Music")
-
-local musicTextBox = Instance.new("TextBox", musicPage)
-musicTextBox.Size = UDim2.new(1, -10, 0, 40)
-musicTextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-musicTextBox.TextColor3 = Color3.new(1, 1, 1)
-musicTextBox.Text = "1837874690" -- Стандартный ID для теста
-musicTextBox.PlaceholderText = "Введите ID музыки"
-Instance.new("UICorner", musicTextBox)
-
-local musicBtn = Instance.new("TextButton", musicPage)
-musicBtn.Size = UDim2.new(1, -10, 0, 40)
-musicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140)
-musicBtn.Text = "PLAY MUSIC"
-musicBtn.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", musicBtn)
-
+-- === ЛОГИКА ДЛЯ МУЗЫКИ (BROOKHAVEN) ===
 musicBtn.MouseButton1Click:Connect(function()
-    -- Обращаемся к событию, которое ты нашел в консоли
-    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes") and 
-                   game:GetService("ReplicatedStorage").Remotes:FindFirstChild("ClientMusic")
+    local jukebox = workspace:FindFirstChild("Jetts_POI", true) and 
+                    workspace.Jetts_POI:FindFirstChild("Components", true) and 
+                    workspace.Jetts_POI.Components:FindFirstChild("Jukebox", true)
     
-    if remote then
-        pcall(function()
-            remote:FireServer("Play", musicTextBox.Text)
-        end)
+    if jukebox then
+        local event = jukebox:FindFirstChild("JukeboxMusicPlay") or jukebox:FindFirstChild("JukeboxMusicStop")
+        if event then
+            pcall(function()
+                event:FireServer(musicTextBox.Text)
+            end)
+        end
     else
-        warn("Remote ClientMusic не найден по указанному пути!")
+        warn("Jukebox не найден в Workspace!")
     end
 end)
 
