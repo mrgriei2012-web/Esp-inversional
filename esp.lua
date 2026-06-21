@@ -195,76 +195,6 @@ tpToolBtn.MouseButton1Click:Connect(function()
     tool.Parent = LocalPlayer.Backpack
 end)
 
--- 6. ВЫДЕЛЕННАЯ СТРАНИЦА: BROOKHAVEN RP (С полем ввода ID)
-local bhPage = createTab("Brookhaven RP")
-
--- ПОЛЕ ВВОДА ДЛЯ ID ЗВУКА
-local bhTextBox = Instance.new("TextBox", bhPage)
-bhTextBox.Size = UDim2.new(1, -10, 0, 36)
-bhTextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-bhTextBox.Text = Brookhaven_SoundID
-bhTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-bhTextBox.PlaceholderText = "Введите ID Музыки здесь..."
-bhTextBox.Font = Enum.Font.Gotham
-bhTextBox.TextSize = 12
-Instance.new("UICorner", bhTextBox)
-
--- Слушатель изменений: при вводе обновляем переменную
-bhTextBox.FocusLost:Connect(function()
-    if bhTextBox.Text ~= "" then
-        Brookhaven_SoundID = bhTextBox.Text
-    end
-end)
-
--- КНОПКА ЗАПУСКА
-local bhMusicBtn = Instance.new("TextButton", bhPage)
-bhMusicBtn.Size = UDim2.new(1, -10, 0, 40)
-bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140)
-bhMusicBtn.Text = "Включить введенный ID"
-bhMusicBtn.TextColor3 = Color3.new(1,1,1)
-bhMusicBtn.Font = Enum.Font.GothamBold
-bhMusicBtn.TextSize = 13
-Instance.new("UICorner", bhMusicBtn)
-
-bhMusicBtn.MouseButton1Click:Connect(function()
-    -- На всякий случай забираем актуальный текст из плашки перед стартом
-    if bhTextBox.Text ~= "" then Brookhaven_SoundID = bhTextBox.Text end
-    
-    local found = false
-    for _, obj in pairs(game:GetDescendants()) do
-        if obj:IsA("RemoteEvent") then
-            if obj.Name == "Network" or obj.Name == "Net" or obj.Name == "CarEvent" or obj.Name == "DriveRemote" then
-                pcall(function()
-                    obj:FireServer("CarMusic", Brookhaven_SoundID)
-                    obj:FireServer("HouseMusic", Brookhaven_SoundID)
-                    obj:FireServer("BoomboxId", tonumber(Brookhaven_SoundID))
-                end)
-                found = true
-            end
-        end
-    end
-    
-    if found then
-        bhMusicBtn.Text = "Музыка отправлена!"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-        task.wait(2)
-        bhMusicBtn.Text = "Включить введенный ID"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140)
-    else
-        local altNet = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes") or game:GetService("ReplicatedStorage"):FindFirstChild("Modules")
-        if altNet then
-            for _, child in pairs(altNet:GetDescendants()) do
-                if child:IsA("RemoteEvent") then
-                    pcall(function() child:FireServer("CarMusic", Brookhaven_SoundID) end)
-                end
-            end
-            bhMusicBtn.Text = "Отправлено альтернативно!"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-        else
-            bhMusicBtn.Text = "Заспавни машину или дом сначала!"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
-        end
-        task.wait(2)
-        bhMusicBtn.Text = "Включить введенный ID"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140)
-    end
-end)
-
 -- 7. Страница: TELEPORTS
 local tpPage = createTab("Teleports")
 local scrollList = Instance.new("Frame", tpPage)
@@ -286,6 +216,65 @@ task.spawn(function()
             end
         end
     end
+end)
+
+-- 6. ВЫДЕЛЕННАЯ СТРАНИЦА: BROOKHAVEN RP (Безопасная FE версия)
+local bhPage = createTab("Brookhaven RP")
+
+-- ПОЛЕ ВВОДА ДЛЯ ID ЗВУКА
+local bhTextBox = Instance.new("TextBox", bhPage)
+bhTextBox.Size = UDim2.new(1, -10, 0, 36)
+bhTextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+bhTextBox.Text = Brookhaven_SoundID
+bhTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+bhTextBox.PlaceholderText = "Введите ID Музыки здесь..."
+bhTextBox.Font = Enum.Font.Gotham
+bhTextBox.TextSize = 12
+Instance.new("UICorner", bhTextBox)
+
+bhTextBox.FocusLost:Connect(function()
+    if bhTextBox.Text ~= "" then Brookhaven_SoundID = bhTextBox.Text end
+end)
+
+-- КНОПКА ЗАПУСКА (Оптимизированная под прямой вызов)
+local bhMusicBtn = Instance.new("TextButton", bhPage)
+bhMusicBtn.Size = UDim2.new(1, -10, 0, 40)
+bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140)
+bhMusicBtn.Text = "Включить введенный ID"
+bhMusicBtn.TextColor3 = Color3.new(1,1,1)
+bhMusicBtn.Font = Enum.Font.GothamBold
+bhMusicBtn.TextSize = 13
+Instance.new("UICorner", bhMusicBtn)
+
+bhMusicBtn.MouseButton1Click:Connect(function()
+    if bhTextBox.Text ~= "" then Brookhaven_SoundID = bhTextBox.Text end
+    
+    -- Прямой и безопасный поиск без сканирования всей игры
+    local network = game:GetService("ReplicatedStorage"):FindFirstChild("Network") or 
+                    game:GetService("ReplicatedStorage"):FindFirstChild("Net")
+                    
+    if network and network:IsA("RemoteEvent") then
+        pcall(function()
+            network:FireServer("CarMusic", Brookhaven_SoundID)
+            network:FireServer("HouseMusic", Brookhaven_SoundID)
+            network:FireServer("BoomboxId", tonumber(Brookhaven_SoundID))
+        end)
+        bhMusicBtn.Text = "Музыка отправлена!"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+    else
+        -- Альтернативный вариант для определенных серверов без перебора
+        local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
+        local carEvent = remotes and (remotes:FindFirstChild("CarEvent") or remotes:FindFirstChild("Network"))
+        
+        if carEvent then
+            pcall(function() carEvent:FireServer("CarMusic", Brookhaven_SoundID) end)
+            bhMusicBtn.Text = "Отправлено (Вариант 2)!"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+        else
+            bhMusicBtn.Text = "Сначала заспавни машину/дом!"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+        end
+    end
+    
+    task.wait(2)
+    bhMusicBtn.Text = "Включить введенный ID"; bhMusicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140)
 end)
 
 -- Настройки отображения первой страницы по умолчанию
