@@ -220,22 +220,21 @@ task.spawn(function()
     end
 end)
 
--- Вкладка MUSIC (Всё в одном блоке)
+-- Блок музыки (Чистый поиск RemoteEvent)
 local musicPage = createTab("Music")
-local musicTextBox = Instance.new("TextBox", musicPage)
-musicTextBox.Size = UDim2.new(1, -10, 0, 40); musicTextBox.Text = "1837874690"; musicTextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30); musicTextBox.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", musicTextBox)
-local musicBtn = Instance.new("TextButton", musicPage)
-musicBtn.Size = UDim2.new(1, -10, 0, 40); musicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140); musicBtn.Text = "PLAY MUSIC"; musicBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", musicBtn)
+local musicTextBox = Instance.new("TextBox", musicPage); musicTextBox.Size = UDim2.new(1, -10, 0, 40); musicTextBox.Text = "1837874690"; musicTextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30); musicTextBox.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", musicTextBox)
+local musicBtn = Instance.new("TextButton", musicPage); musicBtn.Size = UDim2.new(1, -10, 0, 40); musicBtn.BackgroundColor3 = Color3.fromRGB(140, 30, 140); musicBtn.Text = "PLAY MUSIC"; musicBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", musicBtn)
 
 musicBtn.MouseButton1Click:Connect(function()
-    local jukebox = workspace:FindFirstChild("Jetts_POI", true) and workspace.Jetts_POI:FindFirstChild("Components", true) and workspace.Jetts_POI.Components:FindFirstChild("Jukebox", true)
-    if jukebox then
-        local event = jukebox:FindFirstChild("JukeboxMusicPlay")
-        if event then
-            pcall(function() event:FireServer(musicTextBox.Text) end)
-        end
+    -- Ищем только сам RemoteEvent, игнорируя любые ошибки интерфейсов
+    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("ClientMusic", true)
+    
+    if remote then
+        pcall(function()
+            remote:FireServer("Play", musicTextBox.Text)
+        end)
     else
-        warn("Jukebox не найден!")
+        warn("Remote 'ClientMusic' не найден в ReplicatedStorage")
     end
 end)
 
