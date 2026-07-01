@@ -4,6 +4,7 @@ local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
+local AimbotModule = nil -- Сначала он пустой, «никого нет дома»
 
 -- Настройки функций
 local ESP_Enabled = false
@@ -136,8 +137,28 @@ end
 -- === ИНИЦИАЛИЗАЦИЯ СТРАНИЦ СЛЕВА И ФУНКЦИЙ СПРАВА ===
 
 -- 1. Страница: AIMBOT
-local aimPage = createTab("Aimbot")
-addFeature(aimPage, "Aimbot (Доводка Камеры)", Aimbot_Enabled, function(v) Aimbot_Enabled = v end)
+-- Заранее объявим переменную модуля
+local AimbotModule = nil 
+
+-- Заменяем твою текущую строку addFeature на эту:
+addFeature(aimPage, "Aimbot (Доводка Камеры)", Aimbot_Enabled, function(v)
+    Aimbot_Enabled = v
+    if Aimbot_Enabled and not AimbotModule then
+        -- Загружаем модуль только когда кнопка включена в первый раз
+        local success, result = pcall(function()
+            return loadstring(game:HttpGet("https://raw.githubusercontent.com/mrgriei2012-web/Esp-inversional/refs/heads/main/AimbotModule.lua"))()
+        end)
+        
+        if success then
+            AimbotModule = result
+            print("Aimbot Module loaded successfully!")
+        else
+            warn("Failed to load Aimbot Module: " .. tostring(result))
+            Aimbot_Enabled = false -- Отключаем, если не загрузилось
+        end
+    end
+end)
+
 
 -- 2. Страница: BLADE BALL
 local bbPage = createTab("Blade Ball")
@@ -376,6 +397,13 @@ RunService.RenderStepped:Connect(function()
         else
             obj.Box.Visible = false; obj.Tracer.Visible = false; obj.Text.Visible = false
         end
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    -- Скрипт видит: "Ага, Aimbot_Enabled = true, и AimbotModule загружен (не nil). Значит, работаем!"
+    if Aimbot_Enabled and AimbotModule then
+        AimbotModule.Process(true, true, true)
     end
 end)
 
