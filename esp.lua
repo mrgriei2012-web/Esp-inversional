@@ -1,20 +1,16 @@
--- c00lkidd214anzz Hub (Ultimate Two-Panel Edition 2026 - COMPLETE)
+-- c00lkidd214anzz Hub v3 - PART 1
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
-local VirtualInputManager = game:GetService("VirtualInputManager")
 
--- Настройки и переменные
-local ESP_Enabled, Show_Names, Show_Dist, Show_Avatars = false, true, true, false
-local Chams_Enabled, RGB_Chams, Hitbox_Enabled, Noclip_Enabled = false, false, false, false
-local Flying, SpinBot_Enabled, InfJump_Enabled, Aimbot_Enabled = false, false, false, false
-local AutoParry_Enabled, MM2_Revealer = false, false
-local WallCheck, TeamCheck = true, true
-local espObjects, currentRgbColor = {}, Color3.new(1,1,1)
+-- Параметры
+local ESP_Enabled, WallCheck, TeamCheck = false, true, true
+local Aimbot_Enabled, Noclip_Enabled, Flying = false, false, false
+local espObjects = {}
 
--- Функции для нового Аимбота[span_0](start_span)[span_0](end_span)
+-- Функции проверки
 local function isVisible(targetPart)
     if not WallCheck then return true end
     local params = RaycastParams.new()
@@ -30,50 +26,65 @@ local function isEnemy(player)
     return player.Team ~= LocalPlayer.Team
 end
 
--- GUI Setup[span_1](start_span)[span_1](end_span)
-local screenGui = Instance.new("ScreenGui", CoreGui or LocalPlayer:WaitForChild("PlayerGui"))
+-- GUI (Выводим выше всего, чтобы Infinite Yield не перекрывал)
+local screenGui = Instance.new("ScreenGui", CoreGui)
+screenGui.DisplayOrder = 999 -- Приоритет над другими меню
+screenGui.IgnoreGuiInset = true
+
+local mainToggle = Instance.new("TextButton", screenGui)
+mainToggle.Size = UDim2.new(0, 200, 0, 50); mainToggle.Position = UDim2.new(0.5, -100, 0, 20)
+mainToggle.Text = "c00lkidd214anzz Menu"; mainToggle.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+mainToggle.TextColor3 = Color3.new(1,1,1); mainToggle.Draggable = true; mainToggle.Active = true
+Instance.new("UICorner", mainToggle)
+
 local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 550, 0, 320); mainFrame.Position = UDim2.new(0.5, -275, 0.5, -160); mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20); mainFrame.Visible = false; mainFrame.Draggable = true; Instance.new("UICorner", mainFrame)
+mainFrame.Size = UDim2.new(0, 500, 0, 300); mainFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30); mainFrame.Visible = false; mainFrame.Draggable = true
+Instance.new("UICorner", mainFrame)
 
-local sidebar = Instance.new("Frame", mainFrame); sidebar.Size = UDim2.new(0, 150, 1, -20); sidebar.Position = UDim2.new(0, 10, 0, 10); sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15); Instance.new("UICorner", sidebar)
-local sideScroll = Instance.new("ScrollingFrame", sidebar); sideScroll.Size = UDim2.new(1, -10, 1, -10); sideScroll.Position = UDim2.new(0, 5, 0, 5); sideScroll.BackgroundTransparency = 1; sideScroll.ScrollBarThickness = 2
-local contentContainer = Instance.new("Frame", mainFrame); contentContainer.Size = UDim2.new(1, -180, 1, -20); contentContainer.Position = UDim2.new(0, 170, 0, 10); contentContainer.BackgroundTransparency = 1
+mainToggle.MouseButton1Click:Connect(function() mainFrame.Visible = not mainFrame.Visible end)-- c00lkidd214anzz Hub v3 - PART 2
+local contentContainer = Instance.new("Frame", mainFrame)
+contentContainer.Size = UDim2.new(1, -20, 1, -60); contentContainer.Position = UDim2.new(0, 10, 0, 50); contentContainer.BackgroundTransparency = 1
 
-local function createTab(name)
-    local pageScroll = Instance.new("ScrollingFrame", contentContainer); pageScroll.Size = UDim2.new(1, 0, 1, 0); pageScroll.BackgroundTransparency = 1; pageScroll.Visible = false
-    local tabBtn = Instance.new("TextButton", sideScroll); tabBtn.Size = UDim2.new(1, 0, 0, 35); tabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30); tabBtn.Text = name; tabBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", tabBtn)
-    tabBtn.MouseButton1Click:Connect(function() 
-        for _, p in pairs(contentContainer:GetChildren()) do if p:IsA("ScrollingFrame") then p.Visible = false end end
-        pageScroll.Visible = true 
+local function createFeature(name, default, callback)
+    local btn = Instance.new("TextButton", contentContainer)
+    btn.Size = UDim2.new(0, 230, 0, 40); btn.BackgroundColor3 = default and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(60, 60, 60)
+    btn.Text = name; btn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", btn)
+    local state = default
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        btn.BackgroundColor3 = state and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(60, 60, 60)
+        callback(state)
     end)
-    return pageScroll
+    return btn
 end
 
-local function addFeature(parent, text, default, callback)
-    local btn = Instance.new("TextButton", parent); btn.Size = UDim2.new(1, -10, 0, 36); btn.BackgroundColor3 = default and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(40, 40, 40); btn.Text = text; btn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", btn)
-    local enabled = default
-    btn.MouseButton1Click:Connect(function() enabled = not enabled; btn.BackgroundColor3 = enabled and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(40, 40, 40); callback(enabled) end)
-end
+-- Кнопки управления Аимботом
+createFeature("Aimbot", Aimbot_Enabled, function(v) Aimbot_Enabled = v end)
+createFeature("WallCheck", WallCheck, function(v) WallCheck = v end)
+createFeature("TeamCheck", TeamCheck, function(v) TeamCheck = v end)
 
--- Вкладки
-local aimPage = createTab("Aimbot")
-addFeature(aimPage, "Aimbot", Aimbot_Enabled, function(v) Aimbot_Enabled = v end)
-addFeature(aimPage, "WallCheck", WallCheck, function(v) WallCheck = v end)
-addFeature(aimPage, "TeamCheck", TeamCheck, function(v) TeamCheck = v end)-- === Основной цикл: Управление всеми функциями ===
+-- Кнопки остальных функций
+createFeature("ESP Boxes", ESP_Enabled, function(v) ESP_Enabled = v end)
+createFeature("Noclip", Noclip_Enabled, function(v) Noclip_Enabled = v end)
+createFeature("Fly", Flying, function(v) Flying = v end)
+
+-- Упорядочивание кнопок (UIListLayout)
+local layout = Instance.new("UIListLayout", contentContainer)
+layout.Padding = UDim.new(0, 5)
+-- c00lkidd214anzz Hub v3 - PART 3 (FINAL)
 RunService.RenderStepped:Connect(function()
-    currentRgbColor = Color3.fromHSV(tick() % 5 / 5, 1, 1)
-
-    -- Аимбот с поддержкой WallCheck и TeamCheck
+    -- Логика Аимбота
     if Aimbot_Enabled then
         local closest, maxDist = nil, math.huge
         for _, p in pairs(Players:GetPlayers()) do
             if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and isEnemy(p) then
-                local head = p.Character:FindFirstChild("Head") or p.Character.HumanoidRootPart
-                if isVisible(head) then
-                    local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                local part = p.Character:FindFirstChild("Head") or p.Character.HumanoidRootPart
+                if isVisible(part) then
+                    local pos, onScreen = Camera:WorldToViewportPoint(part.Position)
                     if onScreen then
                         local dist = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
-                        if dist < maxDist then maxDist = dist; closest = head end
+                        if dist < maxDist then maxDist = dist; closest = part end
                     end
                 end
             end
@@ -81,46 +92,19 @@ RunService.RenderStepped:Connect(function()
         if closest then Camera.CFrame = CFrame.new(Camera.CFrame.Position, closest.Position) end
     end
 
-    -- Управление персонажем
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        local hum = LocalPlayer.Character.Humanoid
-        if Noclip_Enabled then for _, p in pairs(LocalPlayer.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end end
-        if Flying and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local hrp = LocalPlayer.Character.HumanoidRootPart
-            hrp.Velocity = hum.MoveDirection * FlySpeed + Vector3.new(0, 0.1, 0)
+    -- Логика Noclip
+    if Noclip_Enabled and LocalPlayer.Character then
+        for _, p in pairs(LocalPlayer.Character:GetDescendants()) do
+            if p:IsA("BasePart") then p.CanCollide = false end
         end
     end
 
-    -- Auto Parry (Blade Ball)
-    if AutoParry_Enabled then
-        local balls = workspace:FindFirstChild("Balls") or workspace:FindFirstChild("BallFolder")
-        if balls then
-            for _, ball in pairs(balls:GetChildren()) do
-                if ball:IsA("BasePart") and ball:GetAttribute("Target") == LocalPlayer.Name then
-                    local dist = (LocalPlayer.Character and LocalPlayer.Character.HumanoidRootPart.Position - ball.Position).Magnitude
-                    if dist < 15 then
-                        local rem = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
-                        if rem and rem:FindFirstChild("Parry") then rem.Parry:FireServer() end
-                    end
-                end
-            end
-        end
-    end
-
-    -- ESP Регенерация объектов
-    for player, obj in pairs(espObjects) do
-        if ESP_Enabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local pos, onScreen = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
-            obj.Box.Visible = onScreen
-            -- (Логика отрисовки ESP-боксов и текстов идет здесь)
-        else
-            obj.Box.Visible = false
-        end
+    -- Логика Полета
+    if Flying and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LocalPlayer.Character.HumanoidRootPart
+        local hum = LocalPlayer.Character:FindFirstChild("Humanoid")
+        hrp.Velocity = (hum and hum.MoveDirection * 50) or Vector3.new(0, 0, 0)
     end
 end)
 
--- Инициализация ESP при входе
-for _, p in pairs(Players:GetPlayers()) do if p ~= LocalPlayer then espObjects[p] = {Box = Drawing.new("Square"), Tracer = Drawing.new("Line"), Text = Drawing.new("Text")} end end
-Players.PlayerAdded:Connect(function(p) espObjects[p] = {Box = Drawing.new("Square"), Tracer = Drawing.new("Line"), Text = Drawing.new("Text")} end)
-
-print("c00lkidd214anzz Hub v3 Fully Operational (400+ lines total)!")
+print("c00lkidd214anzz Hub v3: Загрузка завершена. Меню активно!")
